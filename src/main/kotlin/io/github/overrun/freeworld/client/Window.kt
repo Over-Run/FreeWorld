@@ -25,11 +25,15 @@
 package io.github.overrun.freeworld.client
 
 import io.github.overrun.freeworld.FreeWorld.Companion.logger
+import io.github.overrun.freeworld.entity.player.Player
+import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11.glClearColor
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryUtil
+import java.io.Closeable
+import kotlin.math.floor
 
 
 /**
@@ -41,40 +45,51 @@ class Window(
     width: Int,
     height: Int,
     val vSync: Boolean = true
-) {
+) : Closeable {
     private var handle = 0L
     var resized = false
-    var width: Int
+    var width = width
     private set
-    var height: Int
+    var height = height
     private set
-
-    init {
-        this.width = width
-        this.height = height
-    }
+    var mouseX = 0
+    private set
+    var mouseY = 0
+    private set
 
     fun init() {
         GLFWErrorCallback.create { error, description ->
             logger.error("########## GL ERROR ##########")
-            logger.error("{}: {}", error, MemoryUtil.memUTF8(description))
+            logger.error("$error: ${MemoryUtil.memUTF8(description)}")
         }
         check(glfwInit()) { "Unable to initialize GLFW" }
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2)
-        handle = glfwCreateWindow(width, height, title, 0, 0);
+        handle = glfwCreateWindow(width, height, title, 0, 0)
         if (handle == 0L) throw NullPointerException("Failed to create the window")
-        glfwSetFramebufferSizeCallback(handle) { _: Long, w: Int, h: Int ->
+        glfwSetFramebufferSizeCallback(handle) { _, w, h ->
             width = w
             height = h
             resized = true
         }
         glfwSetKeyCallback(
             handle
-        ) { _: Long, key: Int, _: Int, action: Int, _: Int ->
+        ) { window, key, _, action, _ ->
             if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-                glfwSetWindowShouldClose(handle, true)
+                glfwSetWindowShouldClose(window, true)
             }
+            if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_RELEASE) {
+                Player.canMoveCamera = !Player.canMoveCamera
+                setCursorMode(
+                    if (Player.canMoveCamera)
+                        GLFW_CURSOR_DISABLED
+                    else GLFW_CURSOR_NORMAL
+                )
+            }
+        }
+        glfwSetCursorPosCallback(handle) { _, x, y ->
+            mouseX = floor(x).toInt()
+            mouseY = floor(y).toInt()
         }
         val vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
         if (vidMode != null) {
@@ -85,22 +100,34 @@ class Window(
             )
         }
         glfwMakeContextCurrent(handle)
-        glfwSwapInterval(1)
+        glfwSwapInterval(if (vSync) 1 else 0)
         GL.createCapabilities(true)
-        glfwShowWindow(handle)
         glClearColor(.4f, .6f, .9f, 1f)
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LEQUAL)
     }
 
-    fun isKeyPressed(key: Int): Boolean {
-        return glfwGetKey(handle, key) == GLFW_PRESS
-    }
+    fun show() =
+        glfwShowWindow(handle)
 
-    fun shouldClose(): Boolean {
-        return glfwWindowShouldClose(handle)
-    }
+    fun isKeyPressed(key: Int) =
+        glfwGetKey(handle, key) == GLFW_PRESS
+
+    fun setCursorMode(value: Int) =
+        glfwSetInputMode(handle, GLFW_CURSOR, value)
+
+    fun shouldClose() =
+        glfwWindowShouldClose(handle)
 
     fun update() {
         glfwSwapBuffers(handle)
         glfwPollEvents()
+    }
+
+    override fun close() {
+        Callbacks.glfwFreeCallbacks(handle)
+        glfwDestroyWindow(handle)
+        glfwTerminate()
+        glfwSetErrorCallback(null)?.free()
     }
 }

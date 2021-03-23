@@ -39,7 +39,7 @@ class GameEngine(
     private val logic: IGameLogic
 ) {
     companion object {
-        const val TARGET_FPS = 60
+        val TARGET_FPS = System.getProperty("freeworld.fps", "60").toInt()
         const val TARGET_UPS = 30
     }
 
@@ -50,6 +50,7 @@ class GameEngine(
         window.init()
         timer.init()
         logic.init()
+        window.show()
     }
 
     fun input() =
@@ -80,6 +81,7 @@ class GameEngine(
                 sync()
             }
         }
+        window.close()
     }
 
     private fun sync() {

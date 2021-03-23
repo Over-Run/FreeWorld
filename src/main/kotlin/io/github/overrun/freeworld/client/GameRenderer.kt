@@ -25,6 +25,7 @@
 package io.github.overrun.freeworld.client
 
 import io.github.overrun.freeworld.util.Utils.readShaderLines
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL15.*
 import java.io.Closeable
 
@@ -33,52 +34,140 @@ import java.io.Closeable
  * @since 2021/03/18
  */
 class GameRenderer : Closeable {
-    private val vboList = ArrayList<Int>()
     private val transformation = Transformation()
+    private val viewMatrix = Matrix4f()
     private lateinit var program: GlProgram
+    private lateinit var guiProgram: GlProgram
+    private lateinit var mesh: Mesh
+    private lateinit var crossHair: Mesh
+
+    fun makeColor1f(size: Int, multiper: Int = 3): FloatArray {
+        val arr = FloatArray(size * multiper)
+        arr.fill(1.0f)
+        return arr
+    }
 
     fun init() {
         program = GlProgram()
         program.createVsh(readShaderLines("shader/core/block.vsh"))
         program.createFsh(readShaderLines("shader/core/block.fsh"))
         program.link()
+        guiProgram = GlProgram()
+        guiProgram.createVsh(readShaderLines("shader/core/block.vsh"))
+        guiProgram.createFsh(readShaderLines("shader/core/block.fsh"))
+        guiProgram.link()
         val vertices = floatArrayOf(
-            -0.5f, 0.5f, -1.05f,
-            -0.5f, -0.5f, -1.05f,
-            0.5f, -0.5f, -1.05f,
-            0.5f, 0.5f, -1.05f
+            // front
+            // V0
+            -0.5f, 0.5f, 0.0f,
+            // V1
+            -0.5f, -0.5f, 0.0f,
+            // V2
+            0.5f, -0.5f, 0.0f,
+            // V3
+            0.5f, 0.5f, 0.0f,
+            // right
+            // V3
+            0.5f, 0.5f, 0.0f,
+            // V2
+            0.5f, -0.5f, 0.0f,
+            // V6
+            0.5f, -0.5f, -1.0f,
+            // V7
+            0.5f, 0.5f, -1.0f,
+            // top
+            // V4
+            -0.5f, 0.5f, -1.0f,
+            // V0
+            -0.5f, 0.5f, 0.0f,
+            // V3
+            0.5f, 0.5f, 0.0f,
+            // V7
+            0.5f, 0.5f, -1.0f,
+            // left
+            // V4
+            -0.5f, 0.5f, -1.0f,
+            // V5
+            -0.5f, -0.5f, -1.0f,
+            // V1
+            -0.5f, -0.5f, 0.0f,
+            // V0
+            -0.5f, 0.5f, 0.0f,
+            // back
+            // V7
+            0.5f, 0.5f, -1.0f,
+            // V6
+            0.5f, -0.5f, -1.0f,
+            // V5
+            -0.5f, -0.5f, -1.0f,
+            // V4
+            -0.5f, 0.5f, -1.0f,
+            // bottom
+            // V1
+            -0.5f, -0.5f, 0.0f,
+            // V5
+            -0.5f, -0.5f, -1.0f,
+            // V6
+            0.5f, -0.5f, -1.0f,
+            // V2
+            0.5f, -0.5f, 0.0f
         )
-        val colors = floatArrayOf(
-            1f, 0f, 0f,
-            0f, 1f, 0f,
-            0f, 0f, 1f,
-            0f, 1f, 0f
+        val texCoords = floatArrayOf(
+            // front
+            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
+            // right
+            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
+            // top
+            0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f,
+            // left
+            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
+            // back
+            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
+            // bottom
+            0.0f, 0.5f, 0.0f, 1.0f, 0.5f, 1.0f, 0.5f, 0.5f
         )
         val indices = intArrayOf(
-            0, 1, 3, 3, 2, 1
+            // front
+            0, 1, 3, 3, 2, 1,
+            // right
+            4, 5, 7, 7, 6, 5,
+            // top
+            8, 9, 11, 11, 10, 9,
+            // left
+            12, 13, 15, 15, 14, 13,
+            // back
+            16, 17, 19, 19, 18, 17,
+            // bottom
+            20, 21, 23, 23, 22, 21
         )
-        // vertices
-        val vertVbo = glGenBuffers()
-        vboList.add(vertVbo)
-        glBindBuffer(GL_ARRAY_BUFFER, vertVbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
-        program.enableVertexAttribArray("vert")
-        program.vertexAttribPointer("vert", 3, GL_FLOAT, false, 0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        // colors
-        val colorVbo = glGenBuffers()
-        vboList.add(colorVbo)
-        glBindBuffer(GL_ARRAY_BUFFER, colorVbo)
-        glBufferData(GL_ARRAY_BUFFER, colors, GL_STATIC_DRAW)
-        program.enableVertexAttribArray("in_color")
-        program.vertexAttribPointer("in_color", 3, GL_FLOAT, false, 0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        // indices
-        val idxVbo = glGenBuffers()
-        vboList.add(idxVbo)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVbo)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        mesh = Mesh(
+            program,
+            vertices,
+            makeColor1f(indices.size),
+            texCoords,
+            indices,
+            Texture("assets.freeworld/textures/block/grass_block.png")
+        )
+        crossHair = Mesh(
+            guiProgram,
+            floatArrayOf(
+                -18f, 8f, 0f,
+                -18f, 9f, 0f,
+                18f, 9f, 0f,
+                18f, 8f, 0f,
+                8f, -18f, 0f,
+                8f, 18f, 0f,
+                9f, 18f, 0f,
+                9f, -18f, 0f
+            ),
+            makeColor1f(12),
+            floatArrayOf(),
+            intArrayOf(
+                0, 1, 3, 3, 2, 1,
+                4, 5, 7, 7, 6, 5
+            ),
+            null
+        )
     }
 
     fun render(window: Window) {
@@ -88,20 +177,37 @@ class GameRenderer : Closeable {
             window.resized = false
         }
         program.bind()
-        program.setUniform("projectionMatrix",
-            transformation.getProjectionMatrix(window.width.toFloat(), window.height.toFloat()))
-        program.setUniform("worldMatrix",
-            transformation.getWorldMatrix())
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
+        program.setUniform("texSampler", 0)
+        program.setUniform(
+            "projectionMatrix",
+            transformation.getProjectionMatrix(window.width.toFloat(), window.height.toFloat())
+        )
+        program.setUniform(
+            "modelViewMatrix",
+            transformation.getModelViewMatrix(transformation.getViewMatrix())
+        )
+        mesh.render()
         program.unbind()
+        renderGui(window)
+    }
+
+    private fun renderGui(window: Window) {
+        guiProgram.bind()
+        guiProgram.setUniform("texSampler", 0)
+        guiProgram.setUniform(
+            "projectionMatrix",
+            transformation.getOrthoMatrix(window.width.toFloat(), window.height.toFloat()))
+        guiProgram.setUniform(
+            "modelViewMatrix",
+            transformation.getModelViewMatrix(viewMatrix.identity())
+        )
+        crossHair.render()
+        guiProgram.unbind()
     }
 
     override fun close() {
-        program.disableVertexAttribArrays("vert", "in_color")
+        mesh.close()
         program.close()
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        for (vbo in vboList) {
-            glDeleteBuffers(vbo)
-        }
+        guiProgram.close()
     }
 }

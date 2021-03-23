@@ -24,6 +24,9 @@
 
 package io.github.overrun.freeworld.entity.player
 
+import kotlin.math.cos
+import kotlin.math.sin
+
 /**
  * @author squid233
  * @since 2021/03/22
@@ -34,4 +37,19 @@ object Player {
     var z = 0f
     var rotX = 0f
     var rotY = 0f
+    var canMoveCamera = false
+
+    fun moveRelative(ox: Float, oy: Float, oz: Float) {
+        if (ox != 0f) {
+            x += sin(Math.toRadians(rotY - 90.0)).toFloat() * -1.0f * ox
+            z += cos(Math.toRadians(rotY - 90.0)).toFloat() * ox
+        }
+        y += oy
+        if (oz != 0f) {
+            x += sin(Math.toRadians(rotY.toDouble())).toFloat() * -1.0f * (-oz)
+            z += cos(Math.toRadians(rotY.toDouble())).toFloat() * (-oz)
+        }
+    }
+
+    fun speed() = 0.00625f
 }

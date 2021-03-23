@@ -24,33 +24,42 @@
 
 package io.github.overrun.freeworld.client
 
-import io.github.overrun.freeworld.entity.player.Player
-import org.joml.Matrix4f
+import org.lwjgl.opengl.GL12.*
+import java.io.Closeable
+import javax.imageio.ImageIO
 
 /**
  * @author squid233
- * @since 2021/03/21
+ * @since 2021/03/23
  */
-class Transformation {
+class Texture(name: String) : Closeable {
     companion object {
-        private val FOV = Math.toRadians(70.0).toFloat()
+        fun load(name: String): Int =
+            ClassLoader.getSystemResourceAsStream(name)!!.use {
+                val img = ImageIO.read(it)
+                val w = img.width
+                val h = img.height
+                val id = glGenTextures()
+                glBindTexture(GL_TEXTURE_2D, id)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGBA,
+                    w,
+                    h,
+                    0,
+                    GL_BGRA,
+                    GL_UNSIGNED_BYTE,
+                    img.getRGB(0, 0, w, h, null, 0, w)
+                )
+                return id
+            }
     }
 
-    private val projectionMatrix = Matrix4f()
-    private val modelViewMatrix = Matrix4f()
-    private val viewMatrix = Matrix4f()
+    val id = load(name)
 
-    fun getProjectionMatrix(width: Float, height: Float): Matrix4f =
-        projectionMatrix.setPerspective(FOV, width / height, 0.05f, 1000f)
-
-    fun getOrthoMatrix(width: Float, height: Float): Matrix4f =
-        projectionMatrix.setOrtho2D(0f, width, height, 0f)
-
-    fun getViewMatrix(): Matrix4f =
-        viewMatrix.rotationX(Math.toRadians(Player.rotX.toDouble()).toFloat())
-            .rotateY(Math.toRadians(Player.rotY.toDouble()).toFloat())
-            .translate(-Player.x, -Player.y, -Player.z)
-
-    fun getModelViewMatrix(viewMatrix: Matrix4f): Matrix4f =
-        modelViewMatrix.set(viewMatrix)
+    override fun close() =
+        glDeleteTextures(id)
 }

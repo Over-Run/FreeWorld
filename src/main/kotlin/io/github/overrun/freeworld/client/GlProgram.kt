@@ -72,16 +72,11 @@ class GlProgram : Closeable {
         if (glGetProgrami(programId, GL_LINK_STATUS) == GL_FALSE) {
             throw RuntimeException("Error linking GL program: ${glGetProgramInfoLog(programId)}")
         }
-        if (vshId != 0) {
-            glDetachShader(programId, vshId)
-        }
-        if (fshId != 0) {
-            glDetachShader(programId, fshId)
-        }
+        if (vshId != 0) glDetachShader(programId, vshId)
+        if (fshId != 0) glDetachShader(programId, fshId)
         glValidateProgram(programId)
-        if (glGetProgrami(programId, GL_VALIDATE_STATUS) == GL_FALSE) {
+        if (glGetProgrami(programId, GL_VALIDATE_STATUS) == GL_FALSE)
             logger.warn(glGetProgramInfoLog(programId))
-        }
     }
 
     fun bind() =
@@ -105,6 +100,9 @@ class GlProgram : Closeable {
                 matrix4f[it.mallocFloat(16)]
             )
         }
+
+    fun setUniform(name: String, value: Int) =
+        glUniform1i(getUniform(name), value)
 
     fun enableVertexAttribArray(name: String) =
         glEnableVertexAttribArray(glGetAttribLocation(programId, name))

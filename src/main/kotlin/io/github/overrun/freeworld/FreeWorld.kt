@@ -39,27 +39,40 @@ import java.io.Closeable
 class FreeWorld : IGameLogic, Closeable {
     companion object {
         const val VERSION = "0.1.0"
+        const val MOUSE_SENSITIVITY = 70.0f / 100.0f
         val logger = LogManager.getLogger("FreeWorld")!!
     }
 
     private val renderer = GameRenderer()
+    private var lastMouseX = 0
+    private var lastMouseY = 0
 
     override fun init() =
         renderer.init()
 
     override fun input(window: Window) {
-        if (window.isKeyPressed(GLFW_KEY_W))
-            Player.z += 0.00625f
-        if (window.isKeyPressed(GLFW_KEY_S))
-            Player.z -= 0.00625f
-        if (window.isKeyPressed(GLFW_KEY_A))
-            Player.x -= 0.00625f
-        if (window.isKeyPressed(GLFW_KEY_D))
-            Player.x += 0.00625f
-        if (window.isKeyPressed(GLFW_KEY_SPACE))
-            Player.y += 0.00625f
-        if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
-            Player.y -= 0.00625f
+        if (Player.canMoveCamera) {
+            Player.rotX += (window.mouseY - lastMouseY) * MOUSE_SENSITIVITY
+            Player.rotY += (window.mouseX - lastMouseX) * MOUSE_SENSITIVITY
+            if (Player.rotX > 90f)
+                Player.rotX = 90f
+            if (Player.rotX < -90f)
+                Player.rotX = -90f
+            if (window.isKeyPressed(GLFW_KEY_W))
+                Player.moveRelative(0f, 0f, Player.speed())
+            if (window.isKeyPressed(GLFW_KEY_S))
+                Player.moveRelative(0f, 0f, -Player.speed())
+            if (window.isKeyPressed(GLFW_KEY_A))
+                Player.moveRelative(-Player.speed(), 0f, 0f)
+            if (window.isKeyPressed(GLFW_KEY_D))
+                Player.moveRelative(Player.speed(), 0f, 0f)
+            if (window.isKeyPressed(GLFW_KEY_SPACE))
+                Player.moveRelative(0f, Player.speed(), 0f)
+            if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+                Player.moveRelative(0f, -Player.speed(), 0f)
+        }
+        lastMouseX = window.mouseX
+        lastMouseY = window.mouseY
     }
 
     override fun update(delta: Float) = Unit

@@ -24,8 +24,9 @@
 
 package io.github.overrun.freeworld.client
 
-import io.github.overrun.freeworld.util.Utils.readShaderLines
-import org.joml.Matrix4f
+import io.github.overrun.freeworld.block.Block
+import io.github.overrun.freeworld.client.gui.CrossHair
+import io.github.overrun.freeworld.world.World
 import org.lwjgl.opengl.GL15.*
 import java.io.Closeable
 
@@ -35,82 +36,76 @@ import java.io.Closeable
  */
 class GameRenderer : Closeable {
     private val transformation = Transformation()
-    private val viewMatrix = Matrix4f()
+    private lateinit var world: World
     private lateinit var program: GlProgram
-    private lateinit var guiProgram: GlProgram
-    private lateinit var mesh: Mesh
-    private lateinit var crossHair: Mesh
+    private lateinit var nTexGuiProgram: GlProgram
+    private lateinit var block: Block
+    private lateinit var crossHair: CrossHair
 
-    fun makeColor1f(size: Int, multiper: Int = 3): FloatArray {
-        val arr = FloatArray(size * multiper)
+    fun makeColor1f(size: Int, multiplier: Int = 4): FloatArray {
+        val arr = FloatArray(size * multiplier)
         arr.fill(1.0f)
         return arr
     }
 
     fun init() {
         program = GlProgram()
-        program.createVsh(readShaderLines("shader/core/block.vsh"))
-        program.createFsh(readShaderLines("shader/core/block.fsh"))
-        program.link()
-        guiProgram = GlProgram()
-        guiProgram.createVsh(readShaderLines("shader/core/block.vsh"))
-        guiProgram.createFsh(readShaderLines("shader/core/block.fsh"))
-        guiProgram.link()
+        program.createSh("shader/core/block")
         val vertices = floatArrayOf(
             // front
             // V0
-            -0.5f, 0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f,
             // V1
-            -0.5f, -0.5f, 0.0f,
+            0.0f, 0.0f, 0.0f,
             // V2
-            0.5f, -0.5f, 0.0f,
+            1.0f, 0.0f, 0.0f,
             // V3
-            0.5f, 0.5f, 0.0f,
+            1.0f, 1.0f, 0.0f,
             // right
             // V3
-            0.5f, 0.5f, 0.0f,
+            1.0f, 1.0f, 0.0f,
             // V2
-            0.5f, -0.5f, 0.0f,
+            1.0f, 0.0f, 0.0f,
             // V6
-            0.5f, -0.5f, -1.0f,
+            1.0f, 0.0f, -1.0f,
             // V7
-            0.5f, 0.5f, -1.0f,
+            1.0f, 1.0f, -1.0f,
             // top
             // V4
-            -0.5f, 0.5f, -1.0f,
+            0.0f, 1.0f, -1.0f,
             // V0
-            -0.5f, 0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f,
             // V3
-            0.5f, 0.5f, 0.0f,
+            1.0f, 1.0f, 0.0f,
             // V7
-            0.5f, 0.5f, -1.0f,
+            1.0f, 1.0f, -1.0f,
             // left
             // V4
-            -0.5f, 0.5f, -1.0f,
+            0.0f, 1.0f, -1.0f,
             // V5
-            -0.5f, -0.5f, -1.0f,
+            0.0f, 0.0f, -1.0f,
             // V1
-            -0.5f, -0.5f, 0.0f,
+            0.0f, 0.0f, 0.0f,
             // V0
-            -0.5f, 0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f,
             // back
             // V7
-            0.5f, 0.5f, -1.0f,
+            1.0f, 1.0f, -1.0f,
             // V6
-            0.5f, -0.5f, -1.0f,
+            1.0f, 0.0f, -1.0f,
             // V5
-            -0.5f, -0.5f, -1.0f,
+            0.0f, 0.0f, -1.0f,
             // V4
-            -0.5f, 0.5f, -1.0f,
+            0.0f, 1.0f, -1.0f,
             // bottom
             // V1
-            -0.5f, -0.5f, 0.0f,
+            0.0f, 0.0f, 0.0f,
             // V5
-            -0.5f, -0.5f, -1.0f,
+            0.0f, 0.0f, -1.0f,
             // V6
-            0.5f, -0.5f, -1.0f,
+            1.0f, 0.0f, -1.0f,
             // V2
-            0.5f, -0.5f, 0.0f
+            1.0f, 0.0f, 0.0f
         )
         val texCoords = floatArrayOf(
             // front
@@ -140,74 +135,87 @@ class GameRenderer : Closeable {
             // bottom
             20, 21, 23, 23, 22, 21
         )
-        mesh = Mesh(
-            program,
-            vertices,
-            makeColor1f(indices.size),
-            texCoords,
-            indices,
-            Texture("assets.freeworld/textures/block/grass_block.png")
-        )
-        crossHair = Mesh(
-            guiProgram,
-            floatArrayOf(
-                -18f, 8f, 0f,
-                -18f, 9f, 0f,
-                18f, 9f, 0f,
-                18f, 8f, 0f,
-                8f, -18f, 0f,
-                8f, 18f, 0f,
-                9f, 18f, 0f,
-                9f, -18f, 0f
-            ),
-            makeColor1f(12),
-            floatArrayOf(),
-            intArrayOf(
-                0, 1, 3, 3, 2, 1,
-                4, 5, 7, 7, 6, 5
-            ),
-            null
+        block = Block(
+                Mesh(
+                    program,
+                    vertices,
+                    makeColor1f(indices.size),
+                    texCoords,
+                    indices,
+                    texture = Texture(
+                        "assets.freeworld/textures/block/grass_block.png"
+                    )
+                )
+                )
+        world = World(5, 1, 5, block)
+        nTexGuiProgram = GlProgram()
+        nTexGuiProgram.createSh("shader/2d/n_tex")
+        crossHair = CrossHair(
+            Mesh(
+                nTexGuiProgram,
+                floatArrayOf(
+                    -9f, 1f,
+                    -9f, -1f,
+                    9f, -1f,
+                    9f, 1f,
+                    -1f, -9f,
+                    -1f, 9f,
+                    1f, 9f,
+                    1f, -9f,
+                ),
+                makeColor1f(8),
+                null,
+                intArrayOf(
+                    0, 1, 2, 3, 4, 5, 6, 7
+                ),
+                2,
+                mode = GL_QUADS
+            )
         )
     }
 
     fun render(window: Window) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         if (window.resized) {
+            crossHair.x = window.width / 2
+            crossHair.y = window.height / 2
             glViewport(0, 0, window.width, window.height)
             window.resized = false
         }
-        program.bind()
-        program.setUniform("texSampler", 0)
-        program.setUniform(
-            "projectionMatrix",
-            transformation.getProjectionMatrix(window.width.toFloat(), window.height.toFloat())
-        )
-        program.setUniform(
-            "modelViewMatrix",
-            transformation.getModelViewMatrix(transformation.getViewMatrix())
-        )
-        mesh.render()
-        program.unbind()
+        with(program) {
+            bind()
+            setUniform(
+                "projectionMatrix",
+                transformation.getProjectionMatrix(window)
+            )
+            setUniform("texSampler", 0)
+            world.render(program, transformation)
+        }
+        glDisable(GL_DEPTH_TEST)
         renderGui(window)
+        glEnable(GL_DEPTH_TEST)
+        GlProgram.unbind()
     }
 
     private fun renderGui(window: Window) {
-        guiProgram.bind()
-        guiProgram.setUniform("texSampler", 0)
-        guiProgram.setUniform(
-            "projectionMatrix",
-            transformation.getOrthoMatrix(window.width.toFloat(), window.height.toFloat()))
-        guiProgram.setUniform(
-            "modelViewMatrix",
-            transformation.getModelViewMatrix(viewMatrix.identity())
-        )
-        crossHair.render()
-        guiProgram.unbind()
+        with(nTexGuiProgram) {
+            bind()
+            setUniform(
+                "projModelViewMat",
+                transformation.getOrthoProjModelMatrix(
+                    crossHair,
+                    transformation.getOrthoProjMatrix(window)
+                )
+            )
+            crossHair.render()
+        }
     }
 
     override fun close() {
-        mesh.close()
+        block.close()
+        crossHair.close()
         program.close()
-        guiProgram.close()
+        nTexGuiProgram.close()
+        GlProgram.unbind()
     }
 }

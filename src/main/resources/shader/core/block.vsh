@@ -1,9 +1,9 @@
 #version 110
 
 attribute vec3 vert;
-attribute vec3 in_color;
+attribute vec4 in_color;
 attribute vec2 in_texCoord;
-varying vec3 out_color;
+varying vec4 out_color;
 varying vec2 out_texCoord;
 uniform mat4 projectionMatrix, modelViewMatrix;
 

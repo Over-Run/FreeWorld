@@ -44,8 +44,6 @@ object Utils {
         }
     }
 
-    fun readShaderLines(name: String?): String = readLines(name)
-
     inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
         @Suppress("ConvertTryFinallyToUseCall")
         try {

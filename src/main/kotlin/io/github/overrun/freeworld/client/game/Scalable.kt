@@ -22,28 +22,12 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.util
+package io.github.overrun.freeworld.client.game
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/24
  */
-class Timer {
-    var lastLoopTime = 0.0
-    private set
-
-    fun init() {
-        lastLoopTime = getTime()
-    }
-
-    fun getTime(): Double {
-        return System.nanoTime() / 1_000_000_000.0
-    }
-
-    fun getElapsedTime(): Float {
-        val time = getTime()
-        val elapsedTime = (time - lastLoopTime).toFloat()
-        lastLoopTime = time
-        return elapsedTime
-    }
+interface Scalable {
+    var scale: Float
 }

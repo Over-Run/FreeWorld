@@ -25,6 +25,7 @@
 package io.github.overrun.freeworld.client
 
 import io.github.overrun.freeworld.FreeWorld.Companion.logger
+import io.github.overrun.freeworld.util.Utils.readLines
 import io.github.overrun.freeworld.util.Utils.use
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL20.*
@@ -40,6 +41,20 @@ class GlProgram : Closeable {
     private val programId = glCreateProgram()
     private var vshId = 0
     private var fshId = 0
+
+    companion object {
+        @JvmStatic
+        fun unbind() =
+            glUseProgram(0)
+    }
+
+    fun createSh(
+        shader: String
+    ) {
+        createVsh(readLines("$shader.vsh"))
+        createFsh(readLines("$shader.fsh"))
+        link()
+    }
 
     init {
         if (programId == 0) throw NullPointerException("Failed to create GL program")
@@ -82,9 +97,6 @@ class GlProgram : Closeable {
     fun bind() =
         glUseProgram(programId)
 
-    fun unbind() =
-        glUseProgram(0)
-
     fun getUniform(name: String) =
         uniforms.computeIfAbsent(name) { s: String ->
             val loc = glGetUniformLocation(programId, s)
@@ -122,13 +134,29 @@ class GlProgram : Closeable {
         0
     )
 
+    fun enableVertAttribArrPtr(
+        name: String,
+        size: Int,
+        type: Int,
+        normalized: Boolean,
+        stride: Int
+    ) {
+        enableVertexAttribArray(name)
+        vertexAttribPointer(
+            name,
+            size,
+            type,
+            normalized,
+            stride
+        )
+    }
+
     fun disableVertexAttribArrays(vararg names: String) {
         for (nm in names)
             glDisableVertexAttribArray(glGetAttribLocation(programId, nm))
     }
 
     override fun close() {
-        unbind()
         if (programId != 0) glDeleteProgram(programId)
         if (vshId != 0) glDeleteShader(vshId)
         if (fshId != 0) glDeleteShader(fshId)

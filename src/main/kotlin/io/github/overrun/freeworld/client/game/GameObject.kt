@@ -22,28 +22,25 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.util
+package io.github.overrun.freeworld.client.game
+
+import io.github.overrun.freeworld.client.Mesh
+import java.io.Closeable
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/24
  */
-class Timer {
-    var lastLoopTime = 0.0
-    private set
+interface GameObject : Closeable {
+    val mesh: Mesh
 
-    fun init() {
-        lastLoopTime = getTime()
-    }
+    fun getPrevX(): Float
+    fun getPrevY(): Float
+    fun getPrevZ(): Float
 
-    fun getTime(): Double {
-        return System.nanoTime() / 1_000_000_000.0
-    }
+    fun render() =
+        mesh.render()
 
-    fun getElapsedTime(): Float {
-        val time = getTime()
-        val elapsedTime = (time - lastLoopTime).toFloat()
-        lastLoopTime = time
-        return elapsedTime
-    }
+    override fun close() =
+        mesh.close()
 }

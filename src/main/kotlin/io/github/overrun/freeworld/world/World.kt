@@ -22,28 +22,42 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.util
+package io.github.overrun.freeworld.world
+
+import io.github.overrun.freeworld.block.Block
+import io.github.overrun.freeworld.client.GlProgram
+import io.github.overrun.freeworld.client.Transformation
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/24
  */
-class Timer {
-    var lastLoopTime = 0.0
-    private set
+class World(
+    val width: Int,
+    val height: Int,
+    val depth: Int,
+    block: Block
+) {
+    private val blocks = Array(width * height * depth) { block }
 
-    fun init() {
-        lastLoopTime = getTime()
-    }
-
-    fun getTime(): Double {
-        return System.nanoTime() / 1_000_000_000.0
-    }
-
-    fun getElapsedTime(): Float {
-        val time = getTime()
-        val elapsedTime = (time - lastLoopTime).toFloat()
-        lastLoopTime = time
-        return elapsedTime
+    fun render(program: GlProgram, transformation: Transformation) {
+        val viewMatrix = transformation.getViewMatrix()
+        var i = 0
+        for (x in 0 until width) {
+            for (z in 0 until depth) {
+                for (y in 0 until height) {
+                    val block = blocks[i]
+                    block.x = x
+                    block.y = y
+                    block.z = z
+                    program.setUniform(
+                        "modelViewMatrix",
+                        transformation.getModelViewMatrix(block, viewMatrix)
+                    )
+                    block.render()
+                    ++i
+                }
+            }
+        }
     }
 }

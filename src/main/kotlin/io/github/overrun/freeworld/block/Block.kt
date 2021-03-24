@@ -22,28 +22,23 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.util
+package io.github.overrun.freeworld.block
+
+import io.github.overrun.freeworld.client.Mesh
+import io.github.overrun.freeworld.client.game.GameObject
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/24
  */
-class Timer {
-    var lastLoopTime = 0.0
-    private set
+class Block(override val mesh: Mesh) : GameObject {
+    var x = 0
+    var y = 0
+    var z = 0
 
-    fun init() {
-        lastLoopTime = getTime()
-    }
+    override fun getPrevX() = x.toFloat()
 
-    fun getTime(): Double {
-        return System.nanoTime() / 1_000_000_000.0
-    }
+    override fun getPrevY() = y.toFloat()
 
-    fun getElapsedTime(): Float {
-        val time = getTime()
-        val elapsedTime = (time - lastLoopTime).toFloat()
-        lastLoopTime = time
-        return elapsedTime
-    }
+    override fun getPrevZ() = z.toFloat()
 }

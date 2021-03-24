@@ -86,7 +86,7 @@ class GameEngine(
 
     private fun sync() {
         val loopSlot: Float = 1f / TARGET_FPS
-        val endTime = timer.getLastLoopTime() + loopSlot
+        val endTime = timer.lastLoopTime + loopSlot
         while (timer.getTime() < endTime) {
             try {
                 Thread.sleep(1)

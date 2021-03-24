@@ -33,63 +33,73 @@ import java.io.Closeable
  */
 class Mesh(
     private val program: GlProgram,
-    vertices: FloatArray,
-    colors: FloatArray,
-    texCoords: FloatArray,
+    private val vertices: FloatArray,
+    private val colors: FloatArray,
+    private val texCoords: FloatArray?,
     indices: IntArray,
-    private val texture: Texture? = null
+    private val dim: Int = 3,
+    private val texture: Texture? = null,
+    private val mode: Int = GL_TRIANGLES
 ) : Closeable {
-    private val vboList = ArrayList<Int>()
+    private val vertVbo = glGenBuffers()
+    private val colorVbo: Int = glGenBuffers()
+    private var texVbo = 0
+    private val idxVbo: Int
     val vertexCount = indices.size
 
     init {
-        // vertices
-        val vertVbo = glGenBuffers()
-        vboList.add(vertVbo)
-        glBindBuffer(GL_ARRAY_BUFFER, vertVbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
-        program.enableVertexAttribArray("vert")
-        program.vertexAttribPointer("vert", 3, GL_FLOAT, false, 0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        // colors
-        val colorVbo = glGenBuffers()
-        vboList.add(colorVbo)
-        glBindBuffer(GL_ARRAY_BUFFER, colorVbo)
-        glBufferData(GL_ARRAY_BUFFER, colors, GL_STATIC_DRAW)
-        program.enableVertexAttribArray("in_color")
-        program.vertexAttribPointer("in_color", 3, GL_FLOAT, false, 0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        // texture coordinates
-        val texVbo = glGenBuffers()
-        vboList.add(texVbo)
-        glBindBuffer(GL_ARRAY_BUFFER, texVbo)
-        glBufferData(GL_ARRAY_BUFFER, texCoords, GL_STATIC_DRAW)
-        program.enableVertexAttribArray("in_texCoord")
-        program.vertexAttribPointer("in_texCoord", 2, GL_FLOAT, false, 0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        if (texture != null) {
+            texVbo = glGenBuffers()
+        }
         // indices
-        val idxVbo = glGenBuffers()
-        vboList.add(idxVbo)
+        idxVbo = glGenBuffers()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVbo)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        program.setUniform("hasTexture", if (texture == null) 0 else 1)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE)
     }
 
     fun render() {
-        texture?.let {
+        if (texture != null) {
             glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, it.id)
+            glBindTexture(GL_TEXTURE_2D, texture.id)
         }
-        glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0)
+        processBuffer()
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVbo)
+        glDrawElements(mode, vertexCount, GL_UNSIGNED_INT, 0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE)
+        glBindTexture(GL_TEXTURE_2D, GL_NONE)
+    }
+
+    fun processBuffer() {
+        // vertices
+        glBindBuffer(GL_ARRAY_BUFFER, vertVbo)
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STREAM_DRAW)
+        program.enableVertAttribArrPtr("vert", dim, GL_FLOAT, false, 0)
+        // colors
+        glBindBuffer(GL_ARRAY_BUFFER, colorVbo)
+        glBufferData(GL_ARRAY_BUFFER, colors, GL_STREAM_DRAW)
+        program.enableVertAttribArrPtr("in_color", 4, GL_FLOAT, false, 0)
+        if (texture != null) {
+            // texture coordinates
+            glBindBuffer(GL_ARRAY_BUFFER, texVbo)
+            glBufferData(GL_ARRAY_BUFFER, texCoords!!, GL_STREAM_DRAW)
+            program.enableVertAttribArrPtr("in_texCoord", 2, GL_FLOAT, false, 0)
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)
     }
 
     override fun close() {
-        texture?.close()
-        program.disableVertexAttribArrays("vert", "in_color", "in_texCoord")
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        for (vbo in vboList) {
-            glDeleteBuffers(vbo)
+        if (texture != null) {
+            texture.close()
+            program.disableVertexAttribArrays("in_texCoord")
         }
+        program.disableVertexAttribArrays("vert", "in_color")
+        glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE)
+        glDeleteBuffers(vertVbo)
+        glDeleteBuffers(colorVbo)
+        if (texture != null)
+            glDeleteBuffers(texVbo)
+        glDeleteBuffers(idxVbo)
     }
 }

@@ -24,8 +24,12 @@
 
 package io.github.overrun.freeworld.client
 
+import io.github.overrun.freeworld.client.game.GameObject
+import io.github.overrun.freeworld.client.game.Rotatable
+import io.github.overrun.freeworld.client.game.Scalable
 import io.github.overrun.freeworld.entity.player.Player
 import org.joml.Matrix4f
+import java.lang.Math.toRadians
 
 /**
  * @author squid233
@@ -33,24 +37,56 @@ import org.joml.Matrix4f
  */
 class Transformation {
     companion object {
-        private val FOV = Math.toRadians(70.0).toFloat()
+        private val FOV = toRadians(70.0).toFloat()
     }
 
     private val projectionMatrix = Matrix4f()
     private val modelViewMatrix = Matrix4f()
+    private val orthoMatrix = Matrix4f()
     private val viewMatrix = Matrix4f()
 
-    fun getProjectionMatrix(width: Float, height: Float): Matrix4f =
-        projectionMatrix.setPerspective(FOV, width / height, 0.05f, 1000f)
+    fun getProjectionMatrix(window: Window): Matrix4f =
+        projectionMatrix.setPerspective(
+            FOV,
+            window.width.toFloat() / window.height.toFloat(),
+            0.05f,
+            1000f
+        )
 
-    fun getOrthoMatrix(width: Float, height: Float): Matrix4f =
-        projectionMatrix.setOrtho2D(0f, width, height, 0f)
+    fun getOrthoProjMatrix(window: Window): Matrix4f =
+        orthoMatrix.setOrtho2D(
+            0f,
+            window.width.toFloat(),
+            window.height.toFloat(),
+            0f
+        )
+
+    fun getOrthoProjModelMatrix(gameObject: GameObject, orthoMatrix: Matrix4f): Matrix4f {
+        val modelMatrix = Matrix4f().translate(
+            gameObject.getPrevX(),
+            gameObject.getPrevY(),
+            gameObject.getPrevZ()
+        )
+        if (gameObject is Rotatable)
+            modelMatrix.rotateXYZ(
+                toRadians(gameObject.rotX.toDouble()).toFloat(),
+                toRadians(gameObject.rotY.toDouble()).toFloat(),
+                toRadians(gameObject.rotZ.toDouble()).toFloat()
+            )
+        if (gameObject is Scalable)
+            modelMatrix.scale(gameObject.scale)
+        return Matrix4f(orthoMatrix).mul(modelMatrix)
+    }
 
     fun getViewMatrix(): Matrix4f =
-        viewMatrix.rotationX(Math.toRadians(Player.rotX.toDouble()).toFloat())
-            .rotateY(Math.toRadians(Player.rotY.toDouble()).toFloat())
+        viewMatrix.rotationX(toRadians(Player.rotX.toDouble()).toFloat())
+            .rotateY(toRadians(Player.rotY.toDouble()).toFloat())
             .translate(-Player.x, -Player.y, -Player.z)
 
-    fun getModelViewMatrix(viewMatrix: Matrix4f): Matrix4f =
-        modelViewMatrix.set(viewMatrix)
+    fun getModelViewMatrix(gameObject: GameObject, viewMatrix: Matrix4f): Matrix4f =
+        Matrix4f(viewMatrix).mul(modelViewMatrix.translation(
+            gameObject.getPrevX(),
+            gameObject.getPrevY(),
+            gameObject.getPrevZ()
+        ))
 }

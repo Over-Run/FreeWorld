@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     java
     kotlin("jvm") version "1.4.31"
@@ -31,5 +33,8 @@ dependencies {
 
     compileOnly("org.jetbrains:annotations:20.1.0")
 }
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions.jvmTarget = "11"
 
 idea.module.inheritOutputDirs = true

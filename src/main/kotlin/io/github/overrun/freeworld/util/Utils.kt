@@ -32,6 +32,7 @@ import java.util.*
  * @since 2021/03/18
  */
 object Utils {
+    @JvmStatic
     fun readLines(name: String?): String {
         ClassLoader.getSystemResourceAsStream(name).use {
             it.let {
@@ -42,6 +43,14 @@ object Utils {
                 }
             }
         }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun makeColor1f(size: Int, multiplier: Int = 4): FloatArray {
+        val arr = FloatArray(size * multiplier)
+        arr.fill(1.0f)
+        return arr
     }
 
     inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {

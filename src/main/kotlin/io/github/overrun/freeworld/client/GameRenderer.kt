@@ -25,7 +25,11 @@
 package io.github.overrun.freeworld.client
 
 import io.github.overrun.freeworld.block.Block
+import io.github.overrun.freeworld.block.Blocks
+import io.github.overrun.freeworld.client.GlStateManager.disableCullFace
+import io.github.overrun.freeworld.client.GlStateManager.enableCullFace
 import io.github.overrun.freeworld.client.gui.CrossHair
+import io.github.overrun.freeworld.util.Utils.makeColor1f
 import io.github.overrun.freeworld.world.World
 import org.lwjgl.opengl.GL15.*
 import java.io.Closeable
@@ -42,116 +46,16 @@ class GameRenderer : Closeable {
     private lateinit var block: Block
     private lateinit var crossHair: CrossHair
 
-    fun makeColor1f(size: Int, multiplier: Int = 4): FloatArray {
-        val arr = FloatArray(size * multiplier)
-        arr.fill(1.0f)
-        return arr
-    }
-
     fun init() {
         program = GlProgram()
         program.createSh("shader/core/block")
-        val vertices = floatArrayOf(
-            // front
-            // V0
-            0.0f, 1.0f, 0.0f,
-            // V1
-            0.0f, 0.0f, 0.0f,
-            // V2
-            1.0f, 0.0f, 0.0f,
-            // V3
-            1.0f, 1.0f, 0.0f,
-            // right
-            // V3
-            1.0f, 1.0f, 0.0f,
-            // V2
-            1.0f, 0.0f, 0.0f,
-            // V6
-            1.0f, 0.0f, -1.0f,
-            // V7
-            1.0f, 1.0f, -1.0f,
-            // top
-            // V4
-            0.0f, 1.0f, -1.0f,
-            // V0
-            0.0f, 1.0f, 0.0f,
-            // V3
-            1.0f, 1.0f, 0.0f,
-            // V7
-            1.0f, 1.0f, -1.0f,
-            // left
-            // V4
-            0.0f, 1.0f, -1.0f,
-            // V5
-            0.0f, 0.0f, -1.0f,
-            // V1
-            0.0f, 0.0f, 0.0f,
-            // V0
-            0.0f, 1.0f, 0.0f,
-            // back
-            // V7
-            1.0f, 1.0f, -1.0f,
-            // V6
-            1.0f, 0.0f, -1.0f,
-            // V5
-            0.0f, 0.0f, -1.0f,
-            // V4
-            0.0f, 1.0f, -1.0f,
-            // bottom
-            // V1
-            0.0f, 0.0f, 0.0f,
-            // V5
-            0.0f, 0.0f, -1.0f,
-            // V6
-            1.0f, 0.0f, -1.0f,
-            // V2
-            1.0f, 0.0f, 0.0f
-        )
-        val texCoords = floatArrayOf(
-            // front
-            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
-            // right
-            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
-            // top
-            0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f,
-            // left
-            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
-            // back
-            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f,
-            // bottom
-            0.0f, 0.5f, 0.0f, 1.0f, 0.5f, 1.0f, 0.5f, 0.5f
-        )
-        val indices = intArrayOf(
-            // front
-            0, 1, 3, 3, 2, 1,
-            // right
-            4, 5, 7, 7, 6, 5,
-            // top
-            8, 9, 11, 11, 10, 9,
-            // left
-            12, 13, 15, 15, 14, 13,
-            // back
-            16, 17, 19, 19, 18, 17,
-            // bottom
-            20, 21, 23, 23, 22, 21
-        )
-        block = Block(
-                Mesh(
-                    program,
-                    vertices,
-                    makeColor1f(indices.size),
-                    texCoords,
-                    indices,
-                    texture = Texture(
-                        "assets.freeworld/textures/block/grass_block.png"
-                    )
-                )
-                )
-        world = World(5, 1, 5, block)
+        Blocks.init(program)
+        world = World(5, 2, 5)
         nTexGuiProgram = GlProgram()
         nTexGuiProgram.createSh("shader/2d/n_tex")
         crossHair = CrossHair(
-            Mesh(
+            Mesh.of(
+                "cross_hair",
                 nTexGuiProgram,
                 floatArrayOf(
                     -9f, 1f,
@@ -168,11 +72,14 @@ class GameRenderer : Closeable {
                 intArrayOf(
                     0, 1, 2, 3, 4, 5, 6, 7
                 ),
-                2,
+                dim = 2,
                 mode = GL_QUADS
             )
         )
     }
+
+    fun update(window: Window) =
+        world.pick(transformation, window)
 
     fun render(window: Window) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
@@ -192,7 +99,9 @@ class GameRenderer : Closeable {
             world.render(program, transformation)
         }
         glDisable(GL_DEPTH_TEST)
+        disableCullFace()
         renderGui(window)
+        enableCullFace()
         glEnable(GL_DEPTH_TEST)
         GlProgram.unbind()
     }
@@ -212,10 +121,16 @@ class GameRenderer : Closeable {
     }
 
     override fun close() {
-        block.close()
-        crossHair.close()
-        program.close()
-        nTexGuiProgram.close()
+        transformation.close()
+        Mesh.closeAll()
+        if (this::program.isInitialized) {
+            program.close()
+            program.disableVertexAttribArrays("vert", "in_color", "in_texCoord")
+        }
+        if (this::nTexGuiProgram.isInitialized) {
+            nTexGuiProgram.close()
+            nTexGuiProgram.disableVertexAttribArrays("vert", "in_color")
+        }
         GlProgram.unbind()
     }
 }

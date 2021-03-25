@@ -31,7 +31,7 @@ import io.github.overrun.freeworld.client.game.GameObject
  * @author squid233
  * @since 2021/03/24
  */
-class Block(override val mesh: Mesh) : GameObject {
+open class Block(override val mesh: Mesh?) : GameObject {
     var x = 0
     var y = 0
     var z = 0

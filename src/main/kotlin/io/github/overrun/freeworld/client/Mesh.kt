@@ -31,21 +31,67 @@ import java.io.Closeable
  * @author squid233
  * @since 2021/03/23
  */
-class Mesh(
+class Mesh private constructor(
     private val program: GlProgram,
     private val vertices: FloatArray,
-    private val colors: FloatArray,
+    val colors: FloatArray,
     private val texCoords: FloatArray?,
     indices: IntArray,
-    private val dim: Int = 3,
-    private val texture: Texture? = null,
-    private val mode: Int = GL_TRIANGLES
+    private val texture: Texture?,
+    private val dim: Int,
+    private val mode: Int
 ) : Closeable {
     private val vertVbo = glGenBuffers()
     private val colorVbo: Int = glGenBuffers()
     private var texVbo = 0
     private val idxVbo: Int
     val vertexCount = indices.size
+
+    companion object {
+        @JvmStatic
+        val meshes = HashMap<String, Mesh>()
+
+        @JvmStatic
+        fun isPresent(name: String) = meshes.containsKey(name)
+
+        @JvmStatic
+        @JvmOverloads
+        fun of(
+            name: String,
+            program: GlProgram?,
+            vertices: FloatArray?,
+            colors: FloatArray?,
+            texCoords: FloatArray?,
+            indices: IntArray?,
+            texture: Texture? = null,
+            dim: Int? = 3,
+            mode: Int? = GL_TRIANGLES
+        ): Mesh {
+            if (isPresent(name))
+                return meshes[name]!!
+            else {
+                val mesh = Mesh(
+                    program!!,
+                    vertices!!,
+                    colors!!,
+                    texCoords,
+                    indices!!,
+                    texture,
+                    dim!!,
+                    mode!!
+                )
+                meshes[name] = mesh
+                return mesh
+            }
+        }
+
+        fun closeAll() {
+            for (v in meshes.values) {
+                v.close()
+            }
+            meshes.clear()
+        }
+    }
 
     init {
         if (texture != null) {
@@ -89,11 +135,7 @@ class Mesh(
     }
 
     override fun close() {
-        if (texture != null) {
-            texture.close()
-            program.disableVertexAttribArrays("in_texCoord")
-        }
-        program.disableVertexAttribArrays("vert", "in_color")
+        texture?.close()
         glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_NONE)
         glDeleteBuffers(vertVbo)

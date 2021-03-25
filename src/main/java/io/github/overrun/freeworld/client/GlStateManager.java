@@ -22,22 +22,36 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client.game
+package io.github.overrun.freeworld.client;
 
-import io.github.overrun.freeworld.client.Mesh
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author squid233
- * @since 2021/03/24
+ * @since 2021/03/25
  */
-interface GameObject {
-    val mesh: Mesh?
+public final class GlStateManager {
+    public static void enableBlend() {
+        glEnable(GL_BLEND);
+    }
 
-    fun getPrevX(): Float
-    fun getPrevY(): Float
-    fun getPrevZ(): Float
+    public static void blendFuncAlpha() {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
-    fun render() {
-        mesh?.render()
+    public static void disableBlend() {
+        glDisable(GL_BLEND);
+    }
+
+    public static void enableCullFace() {
+        glEnable(GL_CULL_FACE);
+    }
+
+    public static void cullFaceBack() {
+        glCullFace(GL_BACK);
+    }
+
+    public static void disableCullFace() {
+        glDisable(GL_CULL_FACE);
     }
 }

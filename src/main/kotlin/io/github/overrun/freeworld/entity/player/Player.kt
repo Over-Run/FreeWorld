@@ -24,6 +24,7 @@
 
 package io.github.overrun.freeworld.entity.player
 
+import java.lang.Math.toRadians
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -41,15 +42,15 @@ object Player {
 
     fun moveRelative(ox: Float, oy: Float, oz: Float) {
         if (ox != 0f) {
-            x += sin(Math.toRadians(rotY - 90.0)).toFloat() * -1.0f * ox
-            z += cos(Math.toRadians(rotY - 90.0)).toFloat() * ox
+            x += sin(toRadians(rotY - 90.0)).toFloat() * -1.0f * ox
+            z += cos(toRadians(rotY - 90.0)).toFloat() * ox
         }
         y += oy
         if (oz != 0f) {
-            x += sin(Math.toRadians(rotY.toDouble())).toFloat() * -1.0f * (-oz)
-            z += cos(Math.toRadians(rotY.toDouble())).toFloat() * (-oz)
+            x += sin(toRadians(rotY.toDouble())).toFloat() * -1.0f * (-oz)
+            z += cos(toRadians(rotY.toDouble())).toFloat() * (-oz)
         }
     }
 
-    fun speed() = 0.00625f
+    fun speed() = 0.01f
 }

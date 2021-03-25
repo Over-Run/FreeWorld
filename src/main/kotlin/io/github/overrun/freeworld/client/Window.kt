@@ -25,6 +25,7 @@
 package io.github.overrun.freeworld.client
 
 import io.github.overrun.freeworld.FreeWorld.Companion.logger
+import io.github.overrun.freeworld.client.GlStateManager.*
 import io.github.overrun.freeworld.entity.player.Player
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW.*
@@ -105,6 +106,10 @@ class Window(
         glClearColor(.4f, .6f, .9f, 1f)
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
+        enableCullFace()
+        cullFaceBack()
+        enableBlend()
+        blendFuncAlpha()
     }
 
     fun show() =

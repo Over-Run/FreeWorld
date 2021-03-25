@@ -29,29 +29,55 @@ import io.github.overrun.freeworld.client.game.Rotatable
 import io.github.overrun.freeworld.client.game.Scalable
 import io.github.overrun.freeworld.entity.player.Player
 import org.joml.Matrix4f
+import org.lwjgl.opengl.GL11.GL_VIEWPORT
+import org.lwjgl.opengl.GL11.glGetIntegerv
+import org.lwjgl.system.MemoryUtil
+import java.io.Closeable
 import java.lang.Math.toRadians
 
 /**
  * @author squid233
  * @since 2021/03/21
  */
-class Transformation {
+class Transformation : Closeable {
     companion object {
         private val FOV = toRadians(70.0).toFloat()
+        private const val Z_NEAR = 0.05f
+        private const val Z_FAR = 1000f
     }
 
     private val projectionMatrix = Matrix4f()
     private val modelViewMatrix = Matrix4f()
     private val orthoMatrix = Matrix4f()
     private val viewMatrix = Matrix4f()
+    private val viewportBuffer = MemoryUtil.memAllocInt(16)
 
     fun getProjectionMatrix(window: Window): Matrix4f =
         projectionMatrix.setPerspective(
             FOV,
             window.width.toFloat() / window.height.toFloat(),
-            0.05f,
-            1000f
+            Z_NEAR,
+            Z_FAR
         )
+
+    fun getPickMatrix(window: Window): Matrix4f {
+        glGetIntegerv(GL_VIEWPORT, viewportBuffer.clear())
+        viewportBuffer.flip().limit(16)
+        return projectionMatrix.identity()
+            .pick(
+                window.width / 2f,
+                window.height / 2f,
+                5.0f,
+                5.0f,
+                viewportBuffer.array()
+            )
+            .perspective(
+                FOV,
+                window.width.toFloat() / window.height.toFloat(),
+                Z_NEAR,
+                Z_FAR
+            )
+    }
 
     fun getOrthoProjMatrix(window: Window): Matrix4f =
         orthoMatrix.setOrtho2D(
@@ -89,4 +115,8 @@ class Transformation {
             gameObject.getPrevY(),
             gameObject.getPrevZ()
         ))
+
+    override fun close() {
+        MemoryUtil.memFree(viewportBuffer)
+    }
 }

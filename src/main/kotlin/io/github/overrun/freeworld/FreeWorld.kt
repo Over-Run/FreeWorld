@@ -75,7 +75,8 @@ class FreeWorld : IGameLogic, Closeable {
         lastMouseY = window.mouseY
     }
 
-    override fun update(delta: Float) = Unit
+    override fun update(delta: Float, window: Window) =
+        renderer.update(window)
 
     override fun render(window: Window) =
         renderer.render(window)

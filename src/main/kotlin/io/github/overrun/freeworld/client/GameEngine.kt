@@ -57,7 +57,7 @@ class GameEngine(
         logic.input(window)
 
     fun update(interval: Float) =
-        logic.update(interval)
+        logic.update(interval, window)
 
     fun render() {
         logic.render(window)

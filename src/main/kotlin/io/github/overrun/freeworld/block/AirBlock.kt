@@ -22,22 +22,10 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client.game
-
-import io.github.overrun.freeworld.client.Mesh
+package io.github.overrun.freeworld.block
 
 /**
  * @author squid233
- * @since 2021/03/24
+ * @since 2021/03/25
  */
-interface GameObject {
-    val mesh: Mesh?
-
-    fun getPrevX(): Float
-    fun getPrevY(): Float
-    fun getPrevZ(): Float
-
-    fun render() {
-        mesh?.render()
-    }
-}
+class AirBlock : Block(null)

@@ -40,7 +40,7 @@ class GameEngine(
 ) {
     companion object {
         val TARGET_FPS = System.getProperty("freeworld.fps", "60").toInt()
-        const val TARGET_UPS = 30
+        val TARGET_UPS = System.getProperty("freeworld.ups", "35").toInt()
     }
 
     private val window = Window(title, width, height, vSync)
@@ -57,7 +57,7 @@ class GameEngine(
         logic.input(window)
 
     fun update(interval: Float) =
-        logic.update(interval, window)
+        logic.update(interval)
 
     fun render() {
         logic.render(window)

@@ -28,9 +28,8 @@ import io.github.overrun.freeworld.block.Block
 import io.github.overrun.freeworld.block.Blocks
 import io.github.overrun.freeworld.block.Blocks.air
 import io.github.overrun.freeworld.client.GlProgram
-import io.github.overrun.freeworld.client.Mesh
 import io.github.overrun.freeworld.client.Transformation
-import io.github.overrun.freeworld.client.Window
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11.*
 
 /**
@@ -42,21 +41,20 @@ class World(
     val height: Int,
     val depth: Int
 ) {
-    private lateinit var box: Mesh
     private val blocks = Array(width * height * depth) { air }
-//    private val blockPicker = BlockPicker()
 
     init {
         for (x in 0 until width) {
             for (z in 0 until depth) {
-                setBlock(x, 0, z, Blocks.dirt)
-                setBlock(x, 1, z, Blocks.grassBlock)
+                for (y in 0 until 4) {
+                    setBlock(x, y, z, Blocks.dirt)
+                }
+                setBlock(x, 4, z, Blocks.grassBlock)
             }
         }
     }
 
-    fun render(program: GlProgram, transformation: Transformation) {
-        val viewMatrix = transformation.getViewMatrix()
+    fun render(program: GlProgram, transformation: Transformation, viewMatrix: Matrix4f) {
         var i = 0
         for (x in 0 until width) {
             for (z in 0 until depth) {
@@ -78,52 +76,6 @@ class World(
                             "modelViewMatrix",
                             transformation.getModelViewMatrix(block, viewMatrix)
                         )
-                        if (blockPicker.targetIndex == i) {
-                            if (!this::box.isInitialized)
-                                box = Mesh.of(
-                                    "box",
-                                    program,
-                                    floatArrayOf(
-                                        0f, 0f, 0f,
-                                        0f, 1f, 0f,
-                                        1f, 1f, 0f,
-                                        1f, 0f, 0f,
-                                        0f, 0f, -1f,
-                                        0f, 1f, -1f,
-                                        1f, 1f, -1f,
-                                        1f, 0f, -1f
-                                    ),
-                                    floatArrayOf(
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f,
-                                        0f, 0f, 0f, 1f
-                                    ),
-                                    null,
-                                    intArrayOf(
-                                        // front
-                                        3, 2, 1, 0,
-                                        // right
-                                        7, 6, 2, 3,
-                                        // top
-                                        1, 2, 6, 5,
-                                        // left
-                                        0, 1, 5, 4,
-                                        // back
-                                        4, 5, 6, 7,
-                                        // bottom
-                                        0, 4, 7, 3
-                                    ),
-                                    mode = GL_QUADS
-                                )
-                            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-                            box.render()
-                            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-                        }
                         block.render()
                     }
                     ++i
@@ -132,11 +84,51 @@ class World(
         }
     }
 
-    fun pick(transformation: Transformation, window: Window) {
-//        blockPicker.pick(transformation, blocks)
-        transformation.getPickMatrix(window)
-        for (block in blocks) {
+    fun pick(program: GlProgram, transformation: Transformation, viewMatrix: Matrix4f) {
+        glInitNames()
+        glPushName(0)
+        glPushName(0)
+        var i = 0
+        for (x in 0 until width) {
+            glLoadName(x)
+            glPushName(0)
+            for (y in 0 until height) {
+                glLoadName(y)
+                glPushName(0)
+                for (z in 0 until depth) {
+                    glLoadName(z)
+                    glPushName(0)
+                    val block = getBlock(x, y, z)
+                    block.x = x
+                    block.y = y
+                    block.z = z
+                    if (block != air && (
+                                getBlock(x - 1, y, z) == air
+                                        || getBlock(x + 1, y, z) == air
+                                        || getBlock(x, y - 1, z) == air
+                                        || getBlock(x, y + 1, z) == air
+                                        || getBlock(x, y, z - 1) == air
+                                        || getBlock(x, y, z + 1) == air
+                                )
+                    ) {
+                        program.setUniform(
+                            "modelViewMatrix",
+                            transformation.getModelViewMatrix(block, viewMatrix)
+                        )
+                        for (j in 0 until 6) {
+                            glLoadName(j)
+                            block.render(j)
+                        }
+                    }
+                    glPopName()
+                    ++i
+                }
+                glPopName()
+            }
+            glPopName()
         }
+        glPopName()
+        glPopName()
     }
 
     fun inBound(x: Int, y: Int, z: Int) =

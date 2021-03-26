@@ -22,35 +22,27 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.entity.player
+package io.github.overrun.freeworld.util
 
-import java.lang.Math.toRadians
-import kotlin.math.cos
-import kotlin.math.sin
+import io.github.overrun.freeworld.client.Mesh
+import io.github.overrun.freeworld.client.game.GameObject
 
 /**
  * @author squid233
- * @since 2021/03/22
+ * @since 2021/03/26
  */
-object Player {
-    var x = 2f
-    var y = 5f
-    var z = 2f
-    var rotX = 0f
-    var rotY = 0f
-    var canMoveCamera = false
+class HitResult : GameObject {
+    var isNull = true
+    var x = 0
+    var y = 0
+    var z = 0
+    var face = 0
 
-    fun moveRelative(ox: Float, oy: Float, oz: Float) {
-        if (ox != 0f) {
-            x += sin(toRadians(rotY - 90.0)).toFloat() * -1.0f * ox
-            z += cos(toRadians(rotY - 90.0)).toFloat() * ox
-        }
-        y += oy
-        if (oz != 0f) {
-            x += sin(toRadians(rotY.toDouble())).toFloat() * -1.0f * (-oz)
-            z += cos(toRadians(rotY.toDouble())).toFloat() * (-oz)
-        }
-    }
+    override val mesh: Mesh? = null
 
-    fun speed() = 0.3125f
+    override fun getPrevX() = x.toFloat()
+
+    override fun getPrevY() = y.toFloat()
+
+    override fun getPrevZ() = z.toFloat()
 }

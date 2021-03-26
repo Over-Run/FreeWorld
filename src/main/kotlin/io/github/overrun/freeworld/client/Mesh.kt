@@ -24,6 +24,7 @@
 
 package io.github.overrun.freeworld.client
 
+import io.github.overrun.freeworld.util.Utils.NULL
 import org.lwjgl.opengl.GL15.*
 import java.io.Closeable
 
@@ -43,7 +44,7 @@ class Mesh private constructor(
 ) : Closeable {
     private val vertVbo = glGenBuffers()
     private val colorVbo: Int = glGenBuffers()
-    private var texVbo = 0
+    private var texVbo = NULL
     private val idxVbo: Int
     val vertexCount = indices.size
 
@@ -119,16 +120,16 @@ class Mesh private constructor(
     fun processBuffer() {
         // vertices
         glBindBuffer(GL_ARRAY_BUFFER, vertVbo)
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STREAM_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
         program.enableVertAttribArrPtr("vert", dim, GL_FLOAT, false, 0)
         // colors
         glBindBuffer(GL_ARRAY_BUFFER, colorVbo)
-        glBufferData(GL_ARRAY_BUFFER, colors, GL_STREAM_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, colors, GL_STATIC_DRAW)
         program.enableVertAttribArrPtr("in_color", 4, GL_FLOAT, false, 0)
         if (texture != null) {
             // texture coordinates
             glBindBuffer(GL_ARRAY_BUFFER, texVbo)
-            glBufferData(GL_ARRAY_BUFFER, texCoords!!, GL_STREAM_DRAW)
+            glBufferData(GL_ARRAY_BUFFER, texCoords!!, GL_STATIC_DRAW)
             program.enableVertAttribArrPtr("in_texCoord", 2, GL_FLOAT, false, 0)
         }
         glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)

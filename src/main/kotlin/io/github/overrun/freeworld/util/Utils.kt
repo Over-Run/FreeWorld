@@ -28,10 +28,21 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 /**
+ * Useful functions and properties.
+ *
  * @author squid233
  * @since 2021/03/18
  */
 object Utils {
+    /** `NULL` in C of type int. */
+    const val NULL = 0
+
+    /**
+     * Read lines from specified file.
+     *
+     * @param name The name of file.
+     * @return File content separated with `"\n"`.
+     */
     @JvmStatic
     fun readLines(name: String?): String {
         ClassLoader.getSystemResourceAsStream(name).use {
@@ -45,6 +56,13 @@ object Utils {
         }
     }
 
+    /**
+     * Create an array with `1.0f` for GL.
+     *
+     * @param size       Size from `indices`.
+     * @param multiplier Composites of color. For rgba, it's `4`.
+     * @return The array with size `size`*`multiplier` fill with `1.0f`.
+     */
     @JvmStatic
     @JvmOverloads
     fun makeColor1f(size: Int, multiplier: Int = 4): FloatArray {
@@ -52,6 +70,14 @@ object Utils {
         arr.fill(1.0f)
         return arr
     }
+
+    /**
+     * Create an array with `0`.
+     *
+     * @param size Size of array.
+     * @return The array fill with `0`.
+     */
+    fun intArrayOfSize(size: Int) = IntArray(size) { 0 }
 
     inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
         @Suppress("ConvertTryFinallyToUseCall")

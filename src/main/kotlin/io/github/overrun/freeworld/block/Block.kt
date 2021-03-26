@@ -41,4 +41,17 @@ open class Block(override val mesh: Mesh?) : GameObject {
     override fun getPrevY() = y.toFloat()
 
     override fun getPrevZ() = z.toFloat()
+
+    fun render(face: Int) {
+        mesh?.let {
+            when (face) {
+                Blocks.FACE_FRONT -> Blocks.faceFront.render()
+                Blocks.FACE_RIGHT -> Blocks.faceRight.render()
+                Blocks.FACE_TOP -> Blocks.faceTop.render()
+                Blocks.FACE_LEFT -> Blocks.faceLeft.render()
+                Blocks.FACE_BACK -> Blocks.faceBack.render()
+                Blocks.FACE_BOTTOM -> Blocks.faceBottom.render()
+            }
+        }
+    }
 }

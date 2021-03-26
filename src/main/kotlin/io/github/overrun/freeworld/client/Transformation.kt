@@ -28,18 +28,17 @@ import io.github.overrun.freeworld.client.game.GameObject
 import io.github.overrun.freeworld.client.game.Rotatable
 import io.github.overrun.freeworld.client.game.Scalable
 import io.github.overrun.freeworld.entity.player.Player
+import io.github.overrun.freeworld.util.Utils.intArrayOfSize
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11.GL_VIEWPORT
 import org.lwjgl.opengl.GL11.glGetIntegerv
-import org.lwjgl.system.MemoryUtil
-import java.io.Closeable
 import java.lang.Math.toRadians
 
 /**
  * @author squid233
  * @since 2021/03/21
  */
-class Transformation : Closeable {
+class Transformation {
     companion object {
         private val FOV = toRadians(70.0).toFloat()
         private const val Z_NEAR = 0.05f
@@ -50,7 +49,8 @@ class Transformation : Closeable {
     private val modelViewMatrix = Matrix4f()
     private val orthoMatrix = Matrix4f()
     private val viewMatrix = Matrix4f()
-    private val viewportBuffer = MemoryUtil.memAllocInt(16)
+    private val viewMatrixCpy = Matrix4f()
+    private val viewportBuffer = intArrayOfSize(16)
 
     fun getProjectionMatrix(window: Window): Matrix4f =
         projectionMatrix.setPerspective(
@@ -61,15 +61,14 @@ class Transformation : Closeable {
         )
 
     fun getPickMatrix(window: Window): Matrix4f {
-        glGetIntegerv(GL_VIEWPORT, viewportBuffer.clear())
-        viewportBuffer.flip().limit(16)
+        glGetIntegerv(GL_VIEWPORT, viewportBuffer)
         return projectionMatrix.identity()
             .pick(
                 window.width / 2f,
                 window.height / 2f,
-                5.0f,
-                5.0f,
-                viewportBuffer.array()
+                2.5f,
+                2.5f,
+                viewportBuffer
             )
             .perspective(
                 FOV,
@@ -107,16 +106,16 @@ class Transformation : Closeable {
     fun getViewMatrix(): Matrix4f =
         viewMatrix.rotationX(toRadians(Player.rotX.toDouble()).toFloat())
             .rotateY(toRadians(Player.rotY.toDouble()).toFloat())
-            .translate(-Player.x, -Player.y, -Player.z)
+            .translate(-Player.x, -(Player.y + 1.44f), -Player.z)
 
     fun getModelViewMatrix(gameObject: GameObject, viewMatrix: Matrix4f): Matrix4f =
-        Matrix4f(viewMatrix).mul(modelViewMatrix.translation(
-            gameObject.getPrevX(),
-            gameObject.getPrevY(),
-            gameObject.getPrevZ()
-        ))
-
-    override fun close() {
-        MemoryUtil.memFree(viewportBuffer)
-    }
+        viewMatrixCpy.set(viewMatrix)
+//        Matrix4f(viewMatrix)
+            .mul(
+            modelViewMatrix.translation(
+                gameObject.getPrevX(),
+                gameObject.getPrevY(),
+                gameObject.getPrevZ()
+            )
+        )
 }

@@ -33,6 +33,7 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryUtil.NULL
 import java.io.Closeable
 import kotlin.math.floor
 
@@ -66,8 +67,8 @@ class Window(
         check(glfwInit()) { "Unable to initialize GLFW" }
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2)
-        handle = glfwCreateWindow(width, height, title, 0, 0)
-        if (handle == 0L) throw NullPointerException("Failed to create the window")
+        handle = glfwCreateWindow(width, height, title, NULL, NULL)
+        if (handle == NULL) throw NullPointerException("Failed to create the window")
         glfwSetFramebufferSizeCallback(handle) { _, w, h ->
             width = w
             height = h
@@ -76,8 +77,10 @@ class Window(
         glfwSetKeyCallback(
             handle
         ) { window, key, _, action, _ ->
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-                glfwSetWindowShouldClose(window, true)
+            if (action == GLFW_PRESS) {
+                if (key == GLFW_KEY_ESCAPE) {
+                    glfwSetWindowShouldClose(window, true)
+                }
             }
             if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_RELEASE) {
                 Player.canMoveCamera = !Player.canMoveCamera
@@ -102,7 +105,7 @@ class Window(
         }
         glfwMakeContextCurrent(handle)
         glfwSwapInterval(if (vSync) 1 else 0)
-        GL.createCapabilities(true)
+        GL.createCapabilities()
         glClearColor(.4f, .6f, .9f, 1f)
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
@@ -117,6 +120,9 @@ class Window(
 
     fun isKeyPressed(key: Int) =
         glfwGetKey(handle, key) == GLFW_PRESS
+
+    fun isMousePressed(button: Int) =
+        glfwGetMouseButton(handle, button) == GLFW_PRESS
 
     fun setCursorMode(value: Int) =
         glfwSetInputMode(handle, GLFW_CURSOR, value)

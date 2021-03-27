@@ -29,6 +29,7 @@ import io.github.overrun.freeworld.block.Blocks
 import io.github.overrun.freeworld.client.GlStateManager.disableCullFace
 import io.github.overrun.freeworld.client.GlStateManager.enableCullFace
 import io.github.overrun.freeworld.client.gui.CrossHair
+import io.github.overrun.freeworld.entity.player.Player
 import io.github.overrun.freeworld.util.HitResult
 import io.github.overrun.freeworld.util.Utils.intArrayOfSize
 import io.github.overrun.freeworld.util.Utils.makeColor1f
@@ -49,17 +50,18 @@ class GameRenderer : Closeable {
     private val hitResult = HitResult()
     private lateinit var block: Block
     private lateinit var world: World
-    private lateinit var program: GlProgram
+    lateinit var program: GlProgram
     private lateinit var nTexGuiProgram: GlProgram
     private lateinit var crossHair: CrossHair
-    private lateinit var box: Mesh
+    private lateinit var hitResultBox: Mesh
 
     fun init() {
         program = GlProgram()
         program.createSh("shader/core/block")
         Blocks.init(program)
         block = Blocks.grassBlock
-        world = World(32, 64, 32)
+        FreeWorldClient.world = World(32, 64, 32)
+        world = FreeWorldClient.world!!
         nTexGuiProgram = GlProgram()
         nTexGuiProgram.createSh("shader/2d/n_tex")
         crossHair = CrossHair(
@@ -92,9 +94,9 @@ class GameRenderer : Closeable {
             block = Blocks.grassBlock
         if (window.isKeyPressed(GLFW_KEY_2))
             block = Blocks.dirt
-        if (!hitResult.isNull) {
+        if (Player.notPausing && !hitResult.isNull) {
             if (window.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-                world.setBlock(hitResult.x, hitResult.y, hitResult.z, Blocks.air)
+                world.setBlock(hitResult.x, hitResult.y, hitResult.z, Blocks.air, true)
             if (window.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
                 when (hitResult.face) {
                     Blocks.FACE_FRONT ->
@@ -146,8 +148,7 @@ class GameRenderer : Closeable {
             hitResult.y = names[2]
             hitResult.z = names[3]
             hitResult.face = names[4]
-        } else
-            hitResult.isNull = true
+        } else hitResult.isNull = true
     }
 
     fun render(window: Window) {
@@ -188,9 +189,9 @@ class GameRenderer : Closeable {
             transformation.getModelViewMatrix(hitResult, viewMatrix)
         )
         if (!hitResult.isNull) {
-            if (!this::box.isInitialized)
-                box = Mesh.of(
-                    "box",
+            if (!this::hitResultBox.isInitialized)
+                hitResultBox = Mesh.of(
+                    "hitResultBox",
                     program,
                     floatArrayOf(
                         -0.001f, -0.001f, -0.001f,
@@ -238,7 +239,7 @@ class GameRenderer : Closeable {
                     mode = GL_QUADS
                 )
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            box.render()
+            hitResultBox.render()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         }
     }

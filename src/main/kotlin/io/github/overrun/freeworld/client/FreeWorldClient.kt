@@ -24,16 +24,44 @@
 
 package io.github.overrun.freeworld.client
 
+import io.github.overrun.freeworld.server.FreeWorldServer
+import io.github.overrun.freeworld.world.World
+import java.io.Closeable
+
 /**
+ * The client of game.
+ *
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/27
  */
-interface IGameLogic {
-    fun init()
+object // Singleton
+FreeWorldClient : Closeable {
+    private val renderer = GameRenderer()
+    private lateinit var window: Window
+    private lateinit var server: FreeWorldServer
+    var world: World? = null
 
-    fun input(window: Window)
+    fun init() {
+        window = GameEngine.INSTANCE.window
+        renderer.init()
+        // boot server
+        server = FreeWorldServer()
+        server.start()
+    }
 
-    fun update(delta: Float)
+    fun input() =
+        renderer.input(window)
 
-    fun render()
+    fun update() =
+        renderer.update()
+
+    fun render() {
+        if (world != null)
+            renderer.render(window)
+    }
+
+    override fun close() {
+        renderer.close()
+        server.running = false
+    }
 }

@@ -29,10 +29,13 @@ import io.github.overrun.freeworld.block.Blocks
 import io.github.overrun.freeworld.block.Blocks.air
 import io.github.overrun.freeworld.client.GlProgram
 import io.github.overrun.freeworld.client.Transformation
+import io.github.overrun.freeworld.entity.player.Player
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11.*
 
 /**
+ * This is [world][World].
+ * This is not [free][io.github.overrun.freeworld.FreeWorld].
  * @author squid233
  * @since 2021/03/24
  */
@@ -44,12 +47,13 @@ class World(
     private val blocks = Array(width * height * depth) { air }
 
     init {
+        val layer = 2
         for (x in 0 until width) {
             for (z in 0 until depth) {
-                for (y in 0 until 4) {
+                for (y in 0 until layer) {
                     setBlock(x, y, z, Blocks.dirt)
                 }
-                setBlock(x, 4, z, Blocks.grassBlock)
+                setBlock(x, layer, z, Blocks.grassBlock)
             }
         }
     }
@@ -88,14 +92,21 @@ class World(
         glInitNames()
         glPushName(0)
         glPushName(0)
+        val boxRadius = 6
+        val pX0 = (Player.x - boxRadius).toInt()
+        val pY0 = (Player.y - boxRadius).toInt()
+        val pZ0 = (Player.z - boxRadius).toInt()
+        val pX1 = (Player.x + boxRadius + 1).toInt()
+        val pY1 = (Player.y + boxRadius + 1).toInt()
+        val pZ1 = (Player.z + boxRadius + 1).toInt()
         var i = 0
-        for (x in 0 until width) {
+        for (x in pX0 until pX1) {
             glLoadName(x)
             glPushName(0)
-            for (y in 0 until height) {
+            for (y in pY0 until pY1) {
                 glLoadName(y)
                 glPushName(0)
-                for (z in 0 until depth) {
+                for (z in pZ0 until pZ1) {
                     glLoadName(z)
                     glPushName(0)
                     val block = getBlock(x, y, z)
@@ -137,14 +148,17 @@ class World(
                 && z in 0 until depth
 
     fun getIndex(x: Int, y: Int, z: Int) =
-        (x % width) + (y * width) + (z * width * height)
+        //(x % width) + (y * width) + (z * width * height)
+        (x) + (y * width * depth) + (z * width)
 
     fun getBlock(x: Int, y: Int, z: Int) =
         if (inBound(x, y, z)) blocks[getIndex(x, y, z)]
         else air
 
-    fun setBlock(x: Int, y: Int, z: Int, block: Block) {
-        if (inBound(x, y, z))
-            blocks[getIndex(x, y, z)] = block
+    @JvmOverloads
+    fun setBlock(x: Int, y: Int, z: Int, block: Block, force: Boolean = false) {
+        if (!inBound(x, y, z)) return
+        if (!force && getBlock(x, y, z) != air) return
+        blocks[getIndex(x, y, z)] = block
     }
 }

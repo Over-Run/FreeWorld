@@ -31,7 +31,8 @@ import io.github.overrun.freeworld.util.Timer
  * @author squid233
  * @since 2021/03/18
  */
-class GameEngine(
+class GameEngine
+private constructor(
     title: String,
     width: Int,
     height: Int,
@@ -40,10 +41,26 @@ class GameEngine(
 ) {
     companion object {
         val TARGET_FPS = System.getProperty("freeworld.fps", "60").toInt()
-        val TARGET_UPS = System.getProperty("freeworld.ups", "35").toInt()
+        val TARGET_UPS = System.getProperty("freeworld.ups", "30").toInt()
+
+        @JvmStatic
+        lateinit var INSTANCE: GameEngine
+            private set
+
+        @JvmStatic
+        fun create(
+            title: String,
+            width: Int,
+            height: Int,
+            vSync: Boolean,
+            logic: IGameLogic
+        ): GameEngine {
+            INSTANCE = GameEngine(title, width, height, vSync, logic)
+            return INSTANCE
+        }
     }
 
-    private val window = Window(title, width, height, vSync)
+    val window = Window(title, width, height, vSync)
     private val timer = Timer()
 
     fun init() {
@@ -60,7 +77,7 @@ class GameEngine(
         logic.update(interval)
 
     fun render() {
-        logic.render(window)
+        logic.render()
         window.update()
     }
 

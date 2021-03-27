@@ -50,10 +50,17 @@ class Mesh private constructor(
 
     companion object {
         @JvmStatic
-        val meshes = HashMap<String, Mesh>()
+        private val meshes = HashMap<String, Mesh>()
 
+        /**
+         * Check the [Mesh] is in the map.
+         *
+         * @param name [Mesh] id.
+         * @return Whether the [Mesh] is in the map.
+         */
         @JvmStatic
-        fun isPresent(name: String) = meshes.containsKey(name)
+        fun isPresent(name: String) =
+            meshes.containsKey(name) && meshes[name] != null
 
         @JvmStatic
         @JvmOverloads
@@ -86,6 +93,8 @@ class Mesh private constructor(
             }
         }
 
+        /** Clean memory. */
+        @JvmStatic
         fun closeAll() {
             for (v in meshes.values) {
                 v.close()

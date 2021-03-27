@@ -44,17 +44,15 @@ object Utils {
      * @return File content separated with `"\n"`.
      */
     @JvmStatic
-    fun readLines(name: String?): String {
-        ClassLoader.getSystemResourceAsStream(name).use {
-            it.let {
-                Scanner(it, StandardCharsets.UTF_8).use { sc ->
-                    val sb = StringBuilder()
-                    while (sc.hasNextLine()) sb.append(sc.nextLine()).append("\n")
-                    return sb.toString()
-                }
+    fun readLines(name: String?) =
+        ClassLoader.getSystemResourceAsStream(name)!!.use {
+            Scanner(it, StandardCharsets.UTF_8).use { sc ->
+                val sb = StringBuilder()
+                while (sc.hasNextLine())
+                    sb.append(sc.nextLine()).append("\n")
+                sb.toString()
             }
         }
-    }
 
     /**
      * Create an array with `1.0f` for GL.
@@ -79,6 +77,7 @@ object Utils {
      */
     fun intArrayOfSize(size: Int) = IntArray(size) { 0 }
 
+    /** Function [use][kotlin.io.use] for LWJGL. */
     inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
         @Suppress("ConvertTryFinallyToUseCall")
         try {

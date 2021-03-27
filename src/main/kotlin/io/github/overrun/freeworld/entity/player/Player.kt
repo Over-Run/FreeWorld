@@ -34,11 +34,11 @@ import kotlin.math.sin
  */
 object Player {
     var x = 2f
-    var y = 5f
+    var y = 3f
     var z = 2f
     var rotX = 0f
     var rotY = 0f
-    var canMoveCamera = false
+    var notPausing = false
 
     fun moveRelative(ox: Float, oy: Float, oz: Float) {
         if (ox != 0f) {

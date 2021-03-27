@@ -22,18 +22,36 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client
+package io.github.overrun.freeworld.event;
+
+import java.util.List;
+import java.util.function.Function;
 
 /**
+ * Simple implementation of event.
+ *
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/27
  */
-interface IGameLogic {
-    fun init()
+public final class Event<T> {
+    private final List<T> listeners;
+    private final Function<List<T>, T> function;
 
-    fun input(window: Window)
+    public Event(List<T> listeners,
+                 Function<List<T>, T> function) {
+        this.listeners = listeners;
+        this.function = function;
+    }
 
-    fun update(delta: Float)
+    public void register(T t) {
+        listeners.add(t);
+    }
 
-    fun render()
+    public List<T> getListeners() {
+        return listeners;
+    }
+
+    public Function<List<T>, T> getFunction() {
+        return function;
+    }
 }

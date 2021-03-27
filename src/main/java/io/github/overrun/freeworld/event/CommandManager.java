@@ -22,18 +22,31 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client
+package io.github.overrun.freeworld.event;
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/27
  */
-interface IGameLogic {
-    fun init()
+public final class CommandManager {
+    private static final Event<CommandListener> EVENT = EventFactory.create(
+            listeners -> (command, args) -> {
+                for (CommandListener listener : listeners) {
+                    listener.onCommand(command, args);
+                }
+                return true;
+            }
+    );
 
-    fun input(window: Window)
+    public static void post(String command, String... args) {
+        for (CommandListener listener : EVENT.getListeners()) {
+            listener.onCommand(command, args);
+        }
+    }
 
-    fun update(delta: Float)
-
-    fun render()
+    public static void registerAll(CommandListener... listeners) {
+        for (CommandListener listener : listeners) {
+            EVENT.register(listener);
+        }
+    }
 }

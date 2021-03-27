@@ -2,12 +2,12 @@
 
 This is a sandbox game.
 
-**WARNING: LOW PERFORMANCE**
+~~**WARNING: LOW PERFORMANCE**~~
 
 ## General Operations
 
 The game will generate a world with size 32\*64\*32.  
-Fill with 4 layers of dirt and 1 layer of grass block.
+Fill with 2 layers of dirt and 1 layer of grass block.
 
 - Keys
     - Escape: Exit game
@@ -15,23 +15,36 @@ Fill with 4 layers of dirt and 1 layer of grass block.
     - W/A/S/D/Space/Left Shift: Move
     - 1: Choose grass block
     - 2: Choose dirt
+    - F11: Switch fullscreen
 - Mouse buttons
     - Left/Right: Destroy/Place
-    
+
 ## JVM Properties
 
-- freeworld.vsync
-- freeworld.fps
-- freeworld.ups
+- freeworld.vsync=true
+- freeworld.fps=60
+- freeworld.ups=30
+
+## Command system
+
+We added command in version 0.1.0-WIP.  
+Just type the command in terminal.
+
+- <a: type> : argument  
+- \[\<a: type>] : optional argument
+
+Available commands:  
+- setblock <x: int> <y: int> <z: int> \[<block: string>]
+- tp <x: int> <y: int> <z: int>
 
 ## Custom texture
 
 You can customize your texture.  
 The texture structure:
-    - 0, 0 ~ 15, 15: Top
-    - 16, 0 ~ 31, 15: Side
-    - 0, 16 ~ 15, 31: Bottom
-    - 16, 16, 31, 31: Side overlay
+- 0, 0 ~ 15, 15: Top
+- 16, 0 ~ 31, 15: Side
+- 0, 16 ~ 15, 31: Bottom
+- 16, 16, 31, 31: Side overlay
 
 ## Credits
 
@@ -44,4 +57,4 @@ The texture structure:
     - For textures
 - Log4j
 - [Minecrell](https://github.com/Minecrell/)
-    - The Kotlin version of `io.github.overrun.freeworld.util.LoggerNamePatternSelector`
+    - The Kotlin version for `io.github.overrun.freeworld.util.LoggerNamePatternSelector`

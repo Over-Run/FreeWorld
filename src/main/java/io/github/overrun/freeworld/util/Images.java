@@ -22,18 +22,25 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client
+package io.github.overrun.freeworld.util;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/27
  */
-interface IGameLogic {
-    fun init()
-
-    fun input(window: Window)
-
-    fun update(delta: Float)
-
-    fun render()
+public final class Images {
+    public static BufferedImage read(String name) {
+        try (InputStream is = ClassLoader.getSystemResourceAsStream(name)) {
+            return ImageIO.read(Objects.requireNonNull(is));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

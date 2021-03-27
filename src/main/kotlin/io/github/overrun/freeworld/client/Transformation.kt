@@ -66,8 +66,8 @@ class Transformation {
             .pick(
                 window.width / 2f,
                 window.height / 2f,
-                2.5f,
-                2.5f,
+                2f,
+                2f,
                 viewportBuffer
             )
             .perspective(

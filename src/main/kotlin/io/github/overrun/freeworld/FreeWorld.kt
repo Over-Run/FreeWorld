@@ -24,7 +24,7 @@
 
 package io.github.overrun.freeworld
 
-import io.github.overrun.freeworld.client.GameRenderer
+import io.github.overrun.freeworld.client.FreeWorldClient
 import io.github.overrun.freeworld.client.IGameLogic
 import io.github.overrun.freeworld.client.Window
 import io.github.overrun.freeworld.entity.player.Player
@@ -33,6 +33,8 @@ import org.lwjgl.glfw.GLFW.*
 import java.io.Closeable
 
 /**
+ * This is [free][FreeWorld].
+ * This is not [world][io.github.overrun.freeworld.world.World].
  * @author squid233
  * @since 2021/03/18
  */
@@ -40,18 +42,19 @@ class FreeWorld : IGameLogic, Closeable {
     companion object {
         const val VERSION = "0.1.0"
         const val MOUSE_SENSITIVITY = 70.0f / 100.0f
+        @JvmStatic
         val logger = LogManager.getLogger("FreeWorld")!!
     }
 
-    private val renderer = GameRenderer()
+    private val client = FreeWorldClient
     private var lastMouseX = 0
     private var lastMouseY = 0
 
     override fun init() =
-        renderer.init()
+        client.init()
 
     override fun input(window: Window) {
-        if (Player.canMoveCamera) {
+        if (Player.notPausing) {
             Player.rotX += (window.mouseY - lastMouseY) * MOUSE_SENSITIVITY
             Player.rotY += (window.mouseX - lastMouseX) * MOUSE_SENSITIVITY
             if (Player.rotX > 90f)
@@ -73,15 +76,15 @@ class FreeWorld : IGameLogic, Closeable {
         }
         lastMouseX = window.mouseX
         lastMouseY = window.mouseY
-        renderer.input(window)
+        client.input()
     }
 
     override fun update(delta: Float) =
-        renderer.update()
+        client.update()
 
-    override fun render(window: Window) =
-        renderer.render(window)
+    override fun render() =
+        client.render()
 
     override fun close() =
-        renderer.close()
+        client.close()
 }

@@ -22,18 +22,26 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client
+package io.github.overrun.freeworld.event;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author squid233
- * @since 2021/03/18
+ * @since 2021/03/27
  */
-interface IGameLogic {
-    fun init()
-
-    fun input(window: Window)
-
-    fun update(delta: Float)
-
-    fun render()
+public final class EventFactory {
+    /**
+     * Create an event.
+     *
+     * @param function The function with listeners.
+     * {@code T} should iterate the list and call it self.
+     * @param <T>      The generic type of event interface.
+     * @return The event.
+     */
+    public static <T> Event<T> create(Function<List<T>, T> function) {
+        return new Event<>(new ArrayList<>(), function);
+    }
 }

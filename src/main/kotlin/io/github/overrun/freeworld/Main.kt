@@ -34,7 +34,7 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
         FreeWorld().use {
-            GameEngine(
+            GameEngine.create(
                 "FreeWorld ${FreeWorld.VERSION}",
                 854,
                 480,

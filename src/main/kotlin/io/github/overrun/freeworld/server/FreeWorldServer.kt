@@ -99,7 +99,7 @@ class FreeWorldServer : Runnable {
         lateinit var arr: Array<String>
         lateinit var strSc: Scanner
         while (running) {
-            if (sc.hasNextLine()) {
+            if (sc.hasNextLine() && running) {
                 strSc = Scanner(sc.nextLine())
                 while (strSc.hasNext()) {
                     list.add(strSc.next())

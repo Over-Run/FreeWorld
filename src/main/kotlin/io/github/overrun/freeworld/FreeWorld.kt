@@ -40,7 +40,7 @@ import java.io.Closeable
  */
 class FreeWorld : IGameLogic, Closeable {
     companion object {
-        const val VERSION = "0.1.0"
+        const val VERSION = "0.2.0"
         const val MOUSE_SENSITIVITY = 70.0f / 100.0f
         @JvmStatic
         val logger = LogManager.getLogger("FreeWorld")!!

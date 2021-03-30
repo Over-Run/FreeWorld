@@ -27,6 +27,7 @@ package io.github.overrun.freeworld.event;
 import io.github.overrun.freeworld.block.Block;
 import io.github.overrun.freeworld.block.Blocks;
 import io.github.overrun.freeworld.client.FreeWorldClient;
+import io.github.overrun.freeworld.entity.player.Player;
 import io.github.overrun.freeworld.world.World;
 
 import static io.github.overrun.freeworld.FreeWorld.getLogger;
@@ -76,25 +77,43 @@ public interface CommandListener {
                         default:
                             block = Blocks.air;
                     }
-                    world.setBlock(
-                            x,
-                            y,
-                            z,
-                            block,
-                            true
-                    );
+                    world.setBlock(x, y, z, block, true);
                 }
             } else {
                 if (world != null) {
-                    world.setBlock(
-                            x,
-                            y,
-                            z,
-                            Blocks.air,
-                            true
-                    );
+                    world.setBlock(x, y, z, Blocks.air, true);
                 }
             }
+            return true;
+        }
+        return false;
+    };
+    CommandListener TP = (command, args) -> {
+        if ("tp".equals(command) && args.length >= 3) {
+            float x;
+            try {
+                x = Float.parseFloat(args[0]);
+            } catch (NumberFormatException e) {
+                getLogger().error(args[0] + "is not a floating point");
+                return false;
+            }
+            float y;
+            try {
+                y = Float.parseFloat(args[1]);
+            } catch (NumberFormatException e) {
+                getLogger().error(args[1] + "is not a floating point");
+                return false;
+            }
+            float z;
+            try {
+                z = Float.parseFloat(args[2]);
+            } catch (NumberFormatException e) {
+                getLogger().error(args[2] + "is not a floating point");
+                return false;
+            }
+            Player.INSTANCE.setX(x);
+            Player.INSTANCE.setY(y);
+            Player.INSTANCE.setZ(z);
             return true;
         }
         return false;

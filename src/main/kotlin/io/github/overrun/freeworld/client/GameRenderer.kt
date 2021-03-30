@@ -173,10 +173,10 @@ class GameRenderer : Closeable {
                 transformation.getProjectionMatrix(window)
             )
             world.render(program, transformation, viewMatrix)
+            disableCullFace()
             renderHint(viewMatrix)
         }
         glDisable(GL_DEPTH_TEST)
-        disableCullFace()
         renderGui(window)
         enableCullFace()
         glEnable(GL_DEPTH_TEST)
@@ -198,18 +198,18 @@ class GameRenderer : Closeable {
                         -0.001f, 1.001f, -0.001f,
                         1.001f, 1.001f, -0.001f,
                         1.001f, -0.001f, -0.001f,
-                        -0.001f, -0.001f, -1.001f,
-                        -0.001f, 1.001f, -1.001f,
-                        1.001f, 1.001f, -1.001f,
-                        1.001f, -0.001f, -1.001f
-                        /*0f, 0f, 0f,
+                        -0.001f, -0.001f, 1.001f,
+                        -0.001f, 1.001f, 1.001f,
+                        1.001f, 1.001f, 1.001f,
+                        1.001f, -0.001f, 1.001f
+                        /*0f, 0f, 1f,
+                        0f, 1f, 1f,
+                        1f, 1f, 1f,
+                        1f, 0f, 1f,
+                        0f, 0f, 0f,
                         0f, 1f, 0f,
-                        1f, 1f, 0f,
                         1f, 0f, 0f,
-                        0f, 0f, -1f,
-                        0f, 1f, -1f,
-                        1f, 0f, -1f,
-                        1f, 0f, -1f*/
+                        1f, 0f, 0f*/
                     ),
                     floatArrayOf(
                         0f, 0f, 0f, 1f,

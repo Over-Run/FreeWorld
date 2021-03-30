@@ -24,9 +24,8 @@
 
 package io.github.overrun.freeworld.server
 
-import io.github.overrun.freeworld.FreeWorld.Companion.logger
-import io.github.overrun.freeworld.block.Blocks
-import io.github.overrun.freeworld.client.FreeWorldClient
+import io.github.overrun.freeworld.event.CommandListener.SET_BLOCK
+import io.github.overrun.freeworld.event.CommandListener.TP
 import io.github.overrun.freeworld.event.CommandManager
 import java.util.*
 import kotlin.collections.ArrayList
@@ -43,49 +42,10 @@ class FreeWorldServer : Runnable {
 
     fun start() {
         if (!this::thread.isInitialized) {
-            CommandManager.registerAll({ command, args ->
-                if (command == "setblock" && args.size >= 3) {
-                    val x = args[0].toIntOrNull()
-                    if (x == null) {
-                        logger.error("${args[0]} is not a number")
-                        return@registerAll false
-                    }
-                    val y = args[1].toIntOrNull()
-                    if (y == null) {
-                        logger.error("${args[1]} is not a number")
-                        return@registerAll false
-                    }
-                    val z = args[2].toIntOrNull()
-                    if (z == null) {
-                        logger.error("${args[2]} is not a number")
-                        return@registerAll false
-                    }
-                    // interact with client direct
-                    if (args.size >= 4)
-                        FreeWorldClient.world?.setBlock(
-                            x,
-                            y,
-                            z,
-                            when (args[3]) {
-                                "air" -> Blocks.air
-                                "grass_block" -> Blocks.grassBlock
-                                "dirt" -> Blocks.dirt
-                                else -> Blocks.air
-                            },
-                            true
-                        )
-                    else
-                        FreeWorldClient.world?.setBlock(
-                            x,
-                            y,
-                            z,
-                            Blocks.air,
-                            true
-                        )
-                    return@registerAll true
-                }
-                false
-            })
+            CommandManager.registerAll(
+                SET_BLOCK,
+                TP
+            )
             running = true
             thread = Thread(this, "FreeWorldServer")
             thread.start()

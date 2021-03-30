@@ -81,7 +81,7 @@ object Utils {
     inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
         @Suppress("ConvertTryFinallyToUseCall")
         try {
-            return block.invoke(this)
+            return block(this)
         } finally {
             this?.close()
         }

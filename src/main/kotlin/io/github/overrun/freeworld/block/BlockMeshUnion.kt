@@ -24,10 +24,37 @@
 
 package io.github.overrun.freeworld.block
 
+import io.github.overrun.freeworld.block.Blocks.*
+import io.github.overrun.freeworld.client.Mesh
+import io.github.overrun.freeworld.client.Texture
+
 /**
  * @author squid233
- * @since 2021/03/25
+ * @since 2021/03/30
  */
-class AirBlock(union: BlockMeshUnion?) : Block(union) {
-    override fun render(face: Int) = Unit
+class BlockMeshUnion(private val blockName: String) {
+    val map = HashMap<Int, Mesh>()
+
+    private fun setMap(face: Int, texture: Texture, array: FloatArray) {
+        map[face] = singleFaceMesh(
+            face,
+            blockName,
+            texture,
+            *array
+        )
+    }
+
+    init {
+        val texture = Texture("assets.freeworld/textures/block/$blockName.png")
+        setMap(FACE_FRONT, texture, VERTICES_FRONT)
+        setMap(FACE_RIGHT, texture, VERTICES_RIGHT)
+        setMap(FACE_TOP, texture, VERTICES_TOP)
+        setMap(FACE_LEFT, texture, VERTICES_LEFT)
+        setMap(FACE_BACK, texture, VERTICES_BACK)
+        setMap(FACE_BOTTOM, texture, VERTICES_BOTTOM)
+        setMap(FACE_OVERLAY_FRONT, texture, VERTICES_OVERLAY_FRONT)
+        setMap(FACE_OVERLAY_RIGHT, texture, VERTICES_OVERLAY_RIGHT)
+        setMap(FACE_OVERLAY_LEFT, texture, VERTICES_OVERLAY_LEFT)
+        setMap(FACE_OVERLAY_BACK, texture, VERTICES_OVERLAY_BACK)
+    }
 }

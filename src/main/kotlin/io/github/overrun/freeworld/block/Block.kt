@@ -24,6 +24,7 @@
 
 package io.github.overrun.freeworld.block
 
+import io.github.overrun.freeworld.block.Blocks.*
 import io.github.overrun.freeworld.client.Mesh
 import io.github.overrun.freeworld.client.game.GameObject
 
@@ -31,7 +32,8 @@ import io.github.overrun.freeworld.client.game.GameObject
  * @author squid233
  * @since 2021/03/24
  */
-open class Block(override val mesh: Mesh?) : GameObject {
+open class Block(val union: BlockMeshUnion?) : GameObject {
+    override val mesh: Mesh? = null
     var x = 0
     var y = 0
     var z = 0
@@ -42,16 +44,25 @@ open class Block(override val mesh: Mesh?) : GameObject {
 
     override fun getPrevZ() = z.toFloat()
 
-    fun render(face: Int) {
-        mesh?.let {
-            when (face) {
-                Blocks.FACE_FRONT -> Blocks.faceFront.render()
-                Blocks.FACE_RIGHT -> Blocks.faceRight.render()
-                Blocks.FACE_TOP -> Blocks.faceTop.render()
-                Blocks.FACE_LEFT -> Blocks.faceLeft.render()
-                Blocks.FACE_BACK -> Blocks.faceBack.render()
-                Blocks.FACE_BOTTOM -> Blocks.faceBottom.render()
-            }
+    fun faceIs(face: Int, expected: Int) = (face and expected) == expected
+
+    fun renderFace(face: Int, expected: Int) {
+        if (faceIs(face, expected)) {
+            union?.map?.get(expected)?.render()
         }
+    }
+
+    open fun render(face: Int) {
+        if (face <= 0) return
+        renderFace(face, FACE_FRONT)
+        renderFace(face, FACE_RIGHT)
+        renderFace(face, FACE_TOP)
+        renderFace(face, FACE_LEFT)
+        renderFace(face, FACE_BACK)
+        renderFace(face, FACE_BOTTOM)
+        renderFace(face, FACE_OVERLAY_FRONT)
+        renderFace(face, FACE_OVERLAY_RIGHT)
+        renderFace(face, FACE_OVERLAY_LEFT)
+        renderFace(face, FACE_OVERLAY_BACK)
     }
 }

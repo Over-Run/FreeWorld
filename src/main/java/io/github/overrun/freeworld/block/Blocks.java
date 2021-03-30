@@ -28,8 +28,9 @@ import io.github.overrun.freeworld.client.GlProgram;
 import io.github.overrun.freeworld.client.Mesh;
 import io.github.overrun.freeworld.client.Texture;
 
+import java.util.Objects;
+
 import static io.github.overrun.freeworld.util.Utils.makeColor1f;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 
 /**
  * @author squid233
@@ -37,20 +38,150 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
  */
 public final class Blocks {
     private static final int[] SINGLE_FACE_INDICES = {
-            0, 1, 3, 2
+            0, 1, 3, 3, 1, 2
     };
-    public static final int FACE_FRONT = 0;
-    public static final int FACE_RIGHT = 1;
-    public static final int FACE_TOP = 2;
-    public static final int FACE_LEFT = 3;
-    public static final int FACE_BACK = 4;
-    public static final int FACE_BOTTOM = 5;
-    public static Mesh faceFront;
+    public static final float[] VERTICES_FRONT = {
+            // front
+            // V0
+            0, 1, 1,
+            // V1
+            0, 0, 1,
+            // V2
+            1, 0, 1,
+            // V3
+            1, 1, 1
+    };
+    public static final float[] VERTICES_RIGHT = {
+            // right
+            // V3
+            1, 1, 1,
+            // V2
+            1, 0, 1,
+            // V6
+            1, 0, 0,
+            // V7
+            1, 1, 0
+    };
+    public static final float[] VERTICES_TOP = {
+            // top
+            // V4
+            0, 1, 0,
+            // V0
+            0, 1, 1,
+            // V3
+            1, 1, 1,
+            // V7
+            1, 1, 0
+    };
+    public static final float[] VERTICES_LEFT = {
+            // left
+            // V4
+            0, 1, 0,
+            // V5
+            0, 0, 0,
+            // V1
+            0, 0, 1,
+            // V0
+            0, 1, 1
+    };
+    public static final float[] VERTICES_BACK = {
+            // back
+            // V7
+            1, 1, 0,
+            // V6
+            1, 0, 0,
+            // V5
+            0, 0, 0,
+            // V4
+            0, 1, 0
+    };
+    public static final float[] VERTICES_BOTTOM = {
+            // bottom
+            // V1
+            0, 0, 1,
+            // V5
+            0, 0, 0,
+            // V6
+            1, 0, 0,
+            // V2
+            1, 0, 1
+    };
+    public static final float[] VERTICES_OVERLAY_FRONT = {
+            // overlay front
+            // V0
+            0, 1, 1,
+            // V1
+            0, 0, 1,
+            // V2
+            1, 0, 1,
+            // V3
+            1, 1, 1
+    };
+    public static final float[] VERTICES_OVERLAY_RIGHT = {
+            // overlay right
+            // V3
+            1, 1, 1,
+            // V2
+            1, 0, 1,
+            // V6
+            1, 0, 0,
+            // V7
+            1, 1, 0
+    };
+    public static final float[] VERTICES_OVERLAY_LEFT = {
+            // overlay left
+            // V4
+            0, 1, 0,
+            // V5
+            0, 0, 0,
+            // V1
+            0, 0, 1,
+            // V0
+            0, 1, 1
+    };
+    public static final float[] VERTICES_OVERLAY_BACK = {
+            // overlay back
+            // V7
+            1, 1, 0,
+            // V6
+            1, 0, 0,
+            // V5
+            0, 0, 0,
+            // V4
+            0, 1, 0
+    };
+    private static final float[] TEX_COORD_TOP = {
+            0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f
+    };
+    private static final float[] TEX_COORD_BOTTOM = {
+            0.0f, 0.5f, 0.0f, 1.0f, 0.5f, 1.0f, 0.5f, 0.5f
+    };
+    private static final float[] TEX_COORD_SIDE = {
+            0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, 1.0f, 0.0f
+    };
+    private static final float[] TEX_COORD_OVERLAY_SIDE = {
+            0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f
+    };
+    public static final int FACE_FRONT = 1;
+    public static final int FACE_RIGHT = 2;
+    public static final int FACE_TOP = 4;
+    public static final int FACE_LEFT = 8;
+    public static final int FACE_BACK = 16;
+    public static final int FACE_BOTTOM = 32;
+    public static final int FACE_OVERLAY_FRONT = 64;
+    public static final int FACE_OVERLAY_RIGHT = 128;
+    public static final int FACE_OVERLAY_LEFT = 256;
+    public static final int FACE_OVERLAY_BACK = 512;
+    /**public static Mesh faceFront;
     public static Mesh faceRight;
     public static Mesh faceTop;
     public static Mesh faceLeft;
     public static Mesh faceBack;
     public static Mesh faceBottom;
+    public static Mesh faceOverlayFront;
+    public static Mesh faceOverlayRight;
+    public static Mesh faceOverlayLeft;
+    public static Mesh faceOverlayBack;*/
 
     private static GlProgram program;
 
@@ -58,23 +189,33 @@ public final class Blocks {
     public static Block grassBlock;
     public static Block dirt;
 
-    private static Mesh singleFaceMesh(String name, float... vertices) {
+    public static Mesh singleFaceMesh(int face,
+                                      String blockName,
+                                      Texture texture,
+                                      float... vertices) {
         return Mesh.of(
-                "blockFace_" + name,
+                "blockFace_" + blockName + face,
                 program,
                 vertices,
                 makeColor1f(SINGLE_FACE_INDICES.length),
-                null,
+                ((face == FACE_TOP)
+                        ? (TEX_COORD_TOP)
+                        : ((face == FACE_BOTTOM)
+                        ? (TEX_COORD_BOTTOM)
+                        : ((face == FACE_FRONT
+                        || face == FACE_RIGHT
+                        || face == FACE_LEFT
+                        || face == FACE_BACK)
+                        ? (TEX_COORD_SIDE)
+                        : (TEX_COORD_OVERLAY_SIDE)))),
                 SINGLE_FACE_INDICES,
-                null,
-                3,
-                GL_TRIANGLE_STRIP
+                texture
         );
     }
 
-    private static void initFaceMesh() {
+    /*private static void initFaceMesh() {
         faceFront = singleFaceMesh(
-                "front",
+                FACE_FRONT,
                 // V0
                 0, 1, 1,
                 // V1
@@ -85,7 +226,7 @@ public final class Blocks {
                 1, 1, 1
         );
         faceRight = singleFaceMesh(
-                "right",
+                FACE_RIGHT,
                 // V3
                 1, 1, 1,
                 // V2
@@ -96,7 +237,7 @@ public final class Blocks {
                 1, 1, 0
         );
         faceTop = singleFaceMesh(
-                "top",
+                FACE_TOP,
                 // V4
                 0, 1, 0,
                 // V0
@@ -107,7 +248,7 @@ public final class Blocks {
                 1, 1, 0
         );
         faceLeft = singleFaceMesh(
-                "left",
+                FACE_LEFT,
                 // V4
                 0, 1, 0,
                 // V5
@@ -118,7 +259,7 @@ public final class Blocks {
                 0, 1, 1
         );
         faceBack = singleFaceMesh(
-                "back",
+                FACE_BACK,
                 // V7
                 1, 1, 0,
                 // V6
@@ -129,7 +270,7 @@ public final class Blocks {
                 0, 1, 0
         );
         faceBottom = singleFaceMesh(
-                "bottom",
+                FACE_BOTTOM,
                 // V1
                 0, 0, 1,
                 // V5
@@ -139,14 +280,32 @@ public final class Blocks {
                 // V2
                 1, 0, 1
         );
-    }
+    }*/
 
     public static void init(GlProgram glProgram) {
         if (program == null) {
             program = glProgram;
-            air = new AirBlock();
+            air = new AirBlock(null);
             grassBlock = create("grass_block");
-            Mesh mesh = grassBlock.getMesh();
+            var union = Objects.requireNonNull(grassBlock.getUnion()).getMap();
+            for (int i = 0; i < SINGLE_FACE_INDICES.length; i++) {
+                union.get(FACE_TOP).getColors()[i * 4] = 0.568f;
+                union.get(FACE_TOP).getColors()[i * 4 + 1] = 0.741f;
+                union.get(FACE_TOP).getColors()[i * 4 + 2] = 0.349f;
+                union.get(FACE_OVERLAY_FRONT).getColors()[i * 4] = 0.568f;
+                union.get(FACE_OVERLAY_FRONT).getColors()[i * 4 + 1] = 0.741f;
+                union.get(FACE_OVERLAY_FRONT).getColors()[i * 4 + 2] = 0.349f;
+                union.get(FACE_OVERLAY_RIGHT).getColors()[i * 4] = 0.568f;
+                union.get(FACE_OVERLAY_RIGHT).getColors()[i * 4 + 1] = 0.741f;
+                union.get(FACE_OVERLAY_RIGHT).getColors()[i * 4 + 2] = 0.349f;
+                union.get(FACE_OVERLAY_LEFT).getColors()[i * 4] = 0.568f;
+                union.get(FACE_OVERLAY_LEFT).getColors()[i * 4 + 1] = 0.741f;
+                union.get(FACE_OVERLAY_LEFT).getColors()[i * 4 + 2] = 0.349f;
+                union.get(FACE_OVERLAY_BACK).getColors()[i * 4] = 0.568f;
+                union.get(FACE_OVERLAY_BACK).getColors()[i * 4 + 1] = 0.741f;
+                union.get(FACE_OVERLAY_BACK).getColors()[i * 4 + 2] = 0.349f;
+            }
+            /*Mesh mesh = grassBlock.getMesh();
             if (mesh != null) {
                 for (int i = 8; i < 40; i++) {
                     if (i == 12) {
@@ -156,13 +315,13 @@ public final class Blocks {
                     mesh.getColors()[i * 4 + 1] = 0.741f;
                     mesh.getColors()[i * 4 + 2] = 0.349f;
                 }
-            }
+            }*/
             dirt = create("dirt");
-            initFaceMesh();
+            //initFaceMesh();
         }
     }
 
-    private static final float[] VERTICES = {
+    /*private static final float[] VERTICES = {
             // front
             // V0
             0, 1, 1,
@@ -297,17 +456,9 @@ public final class Blocks {
             32, 33, 35, 35, 33, 34,
             // overlay back
             36, 37, 39, 39, 37, 38
-    };
+    };*/
 
     private static Block create(String name) {
-        return new Block(Mesh.of(
-                name,
-                program,
-                VERTICES,
-                makeColor1f(INDICES.length),
-                TEX_COORDS,
-                INDICES,
-                new Texture("assets.freeworld/textures/block/" + name + ".png")
-        ));
+        return new Block(new BlockMeshUnion(name));
     }
 }

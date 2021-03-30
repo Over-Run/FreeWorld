@@ -25,8 +25,7 @@
 package io.github.overrun.freeworld.world
 
 import io.github.overrun.freeworld.block.Block
-import io.github.overrun.freeworld.block.Blocks
-import io.github.overrun.freeworld.block.Blocks.air
+import io.github.overrun.freeworld.block.Blocks.*
 import io.github.overrun.freeworld.client.GlProgram
 import io.github.overrun.freeworld.client.Transformation
 import io.github.overrun.freeworld.entity.player.Player
@@ -51,9 +50,9 @@ class World(
         for (x in 0 until width) {
             for (z in 0 until depth) {
                 for (y in 0 until layer) {
-                    setBlock(x, y, z, Blocks.dirt)
+                    setBlock(x, y, z, dirt)
                 }
-                setBlock(x, layer, z, Blocks.grassBlock)
+                setBlock(x, layer, z, grassBlock)
             }
         }
     }
@@ -80,7 +79,20 @@ class World(
                             "modelViewMatrix",
                             transformation.getModelViewMatrix(block, viewMatrix)
                         )
-                        block.render()
+                        var result = 0
+                        if (getBlock(x - 1, y, z) == air)
+                            result += FACE_LEFT + FACE_OVERLAY_LEFT
+                        if (getBlock(x + 1, y, z) == air)
+                            result += FACE_RIGHT + FACE_OVERLAY_RIGHT
+                        if (getBlock(x, y - 1, z) == air)
+                            result += FACE_BOTTOM
+                        if (getBlock(x, y + 1, z) == air)
+                            result += FACE_TOP
+                        if (getBlock(x, y, z - 1) == air)
+                            result += FACE_BACK + FACE_OVERLAY_BACK
+                        if (getBlock(x, y, z + 1) == air)
+                            result += FACE_FRONT + FACE_OVERLAY_FRONT
+                        block.render(result)
                     }
                     ++i
                 }
@@ -126,10 +138,18 @@ class World(
                             "modelViewMatrix",
                             transformation.getModelViewMatrix(block, viewMatrix)
                         )
-                        for (j in 0 until 6) {
-                            glLoadName(j)
-                            block.render(j)
-                        }
+                        glLoadName(FACE_FRONT)
+                        block.render(FACE_FRONT)
+                        glLoadName(FACE_RIGHT)
+                        block.render(FACE_RIGHT)
+                        glLoadName(FACE_TOP)
+                        block.render(FACE_TOP)
+                        glLoadName(FACE_LEFT)
+                        block.render(FACE_LEFT)
+                        glLoadName(FACE_BACK)
+                        block.render(FACE_BACK)
+                        glLoadName(FACE_BOTTOM)
+                        block.render(FACE_BOTTOM)
                     }
                     glPopName()
                     ++i

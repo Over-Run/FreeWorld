@@ -34,11 +34,11 @@ import java.io.Closeable
  */
 class Mesh private constructor(
     private val program: GlProgram,
-    private val vertices: FloatArray,
-    val colors: FloatArray,
-    private val texCoords: FloatArray?,
-    indices: IntArray,
-    private val texture: Texture?,
+    var vertices: FloatArray,
+    var colors: FloatArray,
+    var texCoords: FloatArray?,
+    var indices: IntArray,
+    var texture: Texture?,
     private val dim: Int,
     private val mode: Int
 ) : Closeable {
@@ -117,7 +117,7 @@ class Mesh private constructor(
     fun render() {
         if (texture != null) {
             glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, texture.id)
+            glBindTexture(GL_TEXTURE_2D, texture!!.id)
         }
         processBuffer()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVbo)

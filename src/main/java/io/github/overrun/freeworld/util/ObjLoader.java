@@ -22,12 +22,15 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.block
+package io.github.overrun.freeworld.util;
+
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * @author squid233
- * @since 2021/03/25
+ * @since 2021/03/30
  */
-class AirBlock(union: BlockMeshUnion?) : Block(union) {
-    override fun render(face: Int) = Unit
+@ApiStatus.Experimental
+public final class ObjLoader {
+    private ObjLoader() {}
 }

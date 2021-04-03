@@ -6,13 +6,15 @@
 ![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/Over-Run/FreeWorld?include_prereleases)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/Over-Run/FreeWorld)
 
+**NOT OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG.**
+
 This is a sandbox game.
 
 ~~**WARNING: LOW PERFORMANCE**~~
 
 ## General Operations
 
-The game will generate a world with size 32\*64\*32.  
+The game will generate a world with size 64\*64\*64.  
 Fill with 2 layers of dirt and 1 layer of grass block.
 
 - Keys
@@ -41,7 +43,7 @@ Just type the command in terminal.
 
 Available commands:  
 - setblock <x: int> <y: int> <z: int> \[<block: string>]
-- tp <x: int> <y: int> <z: int>
+- tp <x: float> <y: float> <z: float>
 
 ## Custom texture
 

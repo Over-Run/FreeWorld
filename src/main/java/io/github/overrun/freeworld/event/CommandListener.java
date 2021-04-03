@@ -31,6 +31,7 @@ import io.github.overrun.freeworld.entity.player.Player;
 import io.github.overrun.freeworld.world.World;
 
 import static io.github.overrun.freeworld.FreeWorld.getLogger;
+import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
 /**
@@ -39,8 +40,22 @@ import static java.lang.Integer.parseInt;
  */
 @FunctionalInterface
 public interface CommandListener {
+    /**
+     * This method trigger on command has sent.
+     * <p>
+     * For example: {@code a 0 0 0}<br>
+     * The command will be {@code a}.<br>
+     * The args will be {@code [0, 0, 0]}.
+     *
+     * @param command The command. Implementor should compare this param.
+     * @param args    The arguments.
+     * @return If success, return true; otherwise false.
+     */
+    boolean onCommand(String command, String... args);
+
+    String SET_BLOCK_STR = "setblock";
     CommandListener SET_BLOCK = (command, args) -> {
-        if ("setblock".equals(command) && args.length >= 3) {
+        if (SET_BLOCK_STR.equals(command) && args.length >= 3) {
             int x;
             try {
                 x = parseInt(args[0]);
@@ -88,25 +103,27 @@ public interface CommandListener {
         }
         return false;
     };
+
+    String TP_STR = "tp";
     CommandListener TP = (command, args) -> {
-        if ("tp".equals(command) && args.length >= 3) {
+        if (TP_STR.equals(command) && args.length >= 3) {
             float x;
             try {
-                x = Float.parseFloat(args[0]);
+                x = parseFloat(args[0]);
             } catch (NumberFormatException e) {
                 getLogger().error(args[0] + "is not a floating point");
                 return false;
             }
             float y;
             try {
-                y = Float.parseFloat(args[1]);
+                y = parseFloat(args[1]);
             } catch (NumberFormatException e) {
                 getLogger().error(args[1] + "is not a floating point");
                 return false;
             }
             float z;
             try {
-                z = Float.parseFloat(args[2]);
+                z = parseFloat(args[2]);
             } catch (NumberFormatException e) {
                 getLogger().error(args[2] + "is not a floating point");
                 return false;
@@ -118,17 +135,4 @@ public interface CommandListener {
         }
         return false;
     };
-
-    /**
-     * This method trigger on command has sent.
-     * <p>
-     * For example: {@code a 0 0 0}<br>
-     * The command will be {@code a}.<br>
-     * The args will be {@code [0, 0, 0]}.
-     *
-     * @param command The command. Implementor should compare this param.
-     * @param args    The arguments.
-     * @return If success, return true; otherwise false.
-     */
-    boolean onCommand(String command, String... args);
 }

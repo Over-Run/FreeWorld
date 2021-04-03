@@ -54,7 +54,7 @@ class FreeWorld : IGameLogic, Closeable {
         client.init()
 
     override fun input(window: Window) {
-        if (Player.notPausing) {
+        if (Player.playing) {
             Player.rotX += (window.mouseY - lastMouseY) * MOUSE_SENSITIVITY
             Player.rotY += (window.mouseX - lastMouseX) * MOUSE_SENSITIVITY
             if (Player.rotX > 90f)

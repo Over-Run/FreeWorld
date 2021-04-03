@@ -44,28 +44,34 @@ class GlProgram : Closeable {
 
     companion object {
         @JvmStatic
+        fun of(shader: String) =
+            GlProgram().createSh(shader)
+
+        @JvmStatic
         fun unbind() =
             glUseProgram(0)
     }
 
     fun createSh(
         shader: String
-    ) {
-        createVsh(readLines("$shader.vsh"))
-        createFsh(readLines("$shader.fsh"))
-        link()
+    ): GlProgram {
+        return createVsh(readLines("$shader.vsh"))
+            .createFsh(readLines("$shader.fsh"))
+            .link()
     }
 
     init {
         if (programId == 0) throw NullPointerException("Failed to create GL program")
     }
 
-    fun createVsh(src: String) {
+    fun createVsh(src: String): GlProgram {
         vshId = createShader(src, GL_VERTEX_SHADER)
+        return this
     }
 
-    fun createFsh(src: String) {
+    fun createFsh(src: String): GlProgram {
         fshId = createShader(src, GL_FRAGMENT_SHADER)
+        return this
     }
 
     private fun createShader(src: String, type: Int): Int {
@@ -82,7 +88,7 @@ class GlProgram : Closeable {
         return id
     }
 
-    fun link() {
+    fun link(): GlProgram {
         glLinkProgram(programId)
         if (glGetProgrami(programId, GL_LINK_STATUS) == GL_FALSE) {
             throw RuntimeException("Error linking GL program: ${glGetProgramInfoLog(programId)}")
@@ -92,15 +98,19 @@ class GlProgram : Closeable {
         glValidateProgram(programId)
         if (glGetProgrami(programId, GL_VALIDATE_STATUS) == GL_FALSE)
             logger.warn(glGetProgramInfoLog(programId))
+        return this
     }
 
     fun bind() =
         glUseProgram(programId)
 
+    fun hasUniform(name: String) =
+        glGetUniformLocation(programId, name) >= 0
+
     fun getUniform(name: String) =
-        uniforms.computeIfAbsent(name) { s: String ->
+        uniforms.computeIfAbsent(name) { s ->
             val loc = glGetUniformLocation(programId, s)
-            require(loc >= 0) { "Couldn't find uniform: $s" }
+            require(hasUniform(s)) { "Couldn't find uniform: \"$s\"" }
             loc
         }
 

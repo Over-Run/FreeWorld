@@ -37,9 +37,8 @@ class Mesh private constructor(
     var vertices: FloatArray,
     var colors: FloatArray,
     var texCoords: FloatArray?,
-    var indices: IntArray,
+    indices: IntArray,
     var texture: Texture?,
-    private val dim: Int,
     private val mode: Int
 ) : Closeable {
     private val vertVbo = glGenBuffers()
@@ -72,25 +71,21 @@ class Mesh private constructor(
             texCoords: FloatArray?,
             indices: IntArray?,
             texture: Texture? = null,
-            dim: Int? = 3,
             mode: Int? = GL_TRIANGLES
-        ): Mesh {
-            if (isPresent(name))
-                return meshes[name]!!
-            else {
-                val mesh = Mesh(
-                    program!!,
-                    vertices!!,
-                    colors!!,
-                    texCoords,
-                    indices!!,
-                    texture,
-                    dim!!,
-                    mode!!
-                )
-                meshes[name] = mesh
-                return mesh
-            }
+        ) = if (isPresent(name))
+            meshes[name]!!
+        else {
+            val mesh = Mesh(
+                program!!,
+                vertices!!,
+                colors!!,
+                texCoords,
+                indices!!,
+                texture,
+                mode!!
+            )
+            meshes[name] = mesh
+            mesh
         }
 
         /** Clean memory. */
@@ -130,17 +125,39 @@ class Mesh private constructor(
         // vertices
         glBindBuffer(GL_ARRAY_BUFFER, vertVbo)
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
-        program.enableVertAttribArrPtr("vert", dim, GL_FLOAT, false, 0)
+        program.enableVertAttribArrPtr(
+            "vert",
+            3,
+            GL_FLOAT,
+            false,
+            0
+        )
         // colors
         glBindBuffer(GL_ARRAY_BUFFER, colorVbo)
         glBufferData(GL_ARRAY_BUFFER, colors, GL_STATIC_DRAW)
-        program.enableVertAttribArrPtr("in_color", 4, GL_FLOAT, false, 0)
+        program.enableVertAttribArrPtr(
+            "in_color",
+            4,
+            GL_FLOAT,
+            false,
+            0
+        )
         if (texture != null) {
             // texture coordinates
             glBindBuffer(GL_ARRAY_BUFFER, texVbo)
             glBufferData(GL_ARRAY_BUFFER, texCoords!!, GL_STATIC_DRAW)
-            program.enableVertAttribArrPtr("in_texCoord", 2, GL_FLOAT, false, 0)
-        }
+            program.enableVertAttribArrPtr(
+                "in_texCoord",
+                2,
+                GL_FLOAT,
+                false,
+                0
+            )
+            if (program.hasUniform("hasTexture"))
+                program.setUniform("hasTexture", 1)
+        } else
+            if (program.hasUniform("hasTexture"))
+                program.setUniform("hasTexture", 0)
         glBindBuffer(GL_ARRAY_BUFFER, GL_NONE)
     }
 

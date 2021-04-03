@@ -22,24 +22,15 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client.gui
+package io.github.overrun.freeworld.client.game
 
 import io.github.overrun.freeworld.client.Mesh
-import io.github.overrun.freeworld.client.game.GameObject
 
 /**
  * @author squid233
- * @since 2021/03/24
+ * @since 2021/04/03
  */
-class CrossHair(override val mesh: Mesh) : GameObject {
-    var x = 0
-    var y = 0
-
-    override fun getPrevX() =
-        x.toFloat()
-
-    override fun getPrevY() =
-        y.toFloat()
-
-    override fun getPrevZ() = 0.0f
+open class BaseGameObject2D(override val mesh: Mesh?) : GameObject2D {
+    override var x = 0
+    override var y = 0
 }

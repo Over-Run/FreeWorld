@@ -61,14 +61,14 @@ class FreeWorldServer : Runnable {
         while (running) {
             if (sc.hasNextLine() && running) {
                 strSc = Scanner(sc.nextLine())
-                while (strSc.hasNext()) {
-                    list.add(strSc.next())
-                }
+                list.add(strSc.next())
                 arr = Array(list.size - 1) { "" }
-                for (i in arr.indices) {
-                    arr[i] = list[i + 1]
-                }
-                CommandManager.post(list[0], *arr)
+                try {
+                    for (i in arr.indices) {
+                        arr[i] = list[i + 1]
+                    }
+                    CommandManager.post(list[0], *arr)
+                } catch (e: NegativeArraySizeException) { }
                 list.clear()
                 print("> ")
                 strSc.close()

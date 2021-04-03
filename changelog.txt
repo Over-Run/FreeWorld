@@ -1,0 +1,12 @@
+Milestones
+---
+Pre-Alpha
+0.1.0 - 2021/03/28 (/)
+The first release
+0.2.0 - 2020/04/?? (todo)
+State 1 - Command tp
+    Command tp
+    Block face Z move
+    Fix: Don't cull face when rendering hint
+    Replace Kotlin block with constant
+State 2 - Overwrite the world

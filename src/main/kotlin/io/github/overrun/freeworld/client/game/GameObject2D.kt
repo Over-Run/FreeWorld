@@ -22,47 +22,21 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.client
-
-import io.github.overrun.freeworld.server.FreeWorldServer
-import io.github.overrun.freeworld.world.World
-import java.io.Closeable
+package io.github.overrun.freeworld.client.game
 
 /**
- * The client of game.
- *
  * @author squid233
- * @since 2021/03/27
+ * @since 2021/04/03
  */
-object // Singleton
-FreeWorldClient : Closeable {
-    private val renderer = GameRenderer()
-    private lateinit var window: Window
-    private lateinit var server: FreeWorldServer
-    var showTab = false
-    var world: World? = null
+interface GameObject2D : GameObject {
+    var x: Int
+    var y: Int
 
-    fun init() {
-        window = GameEngine.INSTANCE.window
-        renderer.init()
-        // boot server
-        server = FreeWorldServer()
-        server.start()
-    }
+    override fun getPrevX() =
+        x.toFloat()
 
-    fun input() =
-        renderer.input(window)
+    override fun getPrevY() =
+        y.toFloat()
 
-    fun update() =
-        renderer.update()
-
-    fun render() {
-        if (world != null)
-            renderer.render(window)
-    }
-
-    override fun close() {
-        renderer.close()
-        server.running = false
-    }
+    override fun getPrevZ() = 0.0f
 }

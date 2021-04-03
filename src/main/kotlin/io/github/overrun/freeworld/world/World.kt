@@ -57,7 +57,7 @@ class World(
         }
     }
 
-    fun render(program: GlProgram, transformation: Transformation, viewMatrix: Matrix4f) {
+    fun render(program: GlProgram, viewMatrix: Matrix4f) {
         for (x in 0 until width) {
             for (z in 0 until depth) {
                 for (y in 0 until height) {
@@ -76,7 +76,7 @@ class World(
                     ) {
                         program.setUniform(
                             "modelViewMatrix",
-                            transformation.getModelViewMatrix(block, viewMatrix)
+                            Transformation.getModelViewMatrix(block, viewMatrix)
                         )
                         var result = 0
                         if (getBlock(x - 1, y, z) == air)
@@ -98,11 +98,11 @@ class World(
         }
     }
 
-    fun pick(program: GlProgram, transformation: Transformation, viewMatrix: Matrix4f) {
+    fun pick(program: GlProgram, viewMatrix: Matrix4f) {
         glInitNames()
         glPushName(0)
         glPushName(0)
-        val boxRadius = 10
+        val boxRadius = 6
         val pX0 = (Player.x - boxRadius).toInt()
         val pY0 = (Player.y - boxRadius).toInt()
         val pZ0 = (Player.z - boxRadius).toInt()
@@ -133,7 +133,7 @@ class World(
                     ) {
                         program.setUniform(
                             "modelViewMatrix",
-                            transformation.getModelViewMatrix(block, viewMatrix)
+                            Transformation.getModelViewMatrix(block, viewMatrix)
                         )
                         glColor3f(1f, 1f, 1f)
                         glLoadName(FACE_FRONT)

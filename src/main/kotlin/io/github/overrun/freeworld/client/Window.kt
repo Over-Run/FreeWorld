@@ -101,9 +101,18 @@ class Window(
                 }
             }
             if (action == GLFW_RELEASE) {
+                if (key == GLFW_KEY_E) {
+                    FreeWorldClient.showTab = !FreeWorldClient.showTab
+                    Player.playing = !FreeWorldClient.showTab
+                    setCursorMode(
+                        if (Player.playing)
+                            GLFW_CURSOR_DISABLED
+                        else GLFW_CURSOR_NORMAL
+                    )
+                }
                 if (key == GLFW_KEY_F11) {
                     if (fullscreen) {
-                        Player.notPausing = false
+                        Player.playing = false
                         glfwSetWindowMonitor(
                             handle,
                             NULL,
@@ -119,7 +128,7 @@ class Window(
                         if (monitor != NULL) {
                             val vidMode = glfwGetVideoMode(monitor)
                             if (vidMode != null) {
-                                Player.notPausing = false
+                                Player.playing = false
                                 MemoryStack.stackPush().use {
                                     val xb = it.mallocInt(1)
                                     val yb = it.mallocInt(1)
@@ -144,9 +153,9 @@ class Window(
                     }
                 }
                 if (key == GLFW_KEY_GRAVE_ACCENT) {
-                    Player.notPausing = !Player.notPausing
+                    Player.playing = !Player.playing
                     setCursorMode(
-                        if (Player.notPausing)
+                        if (Player.playing)
                             GLFW_CURSOR_DISABLED
                         else GLFW_CURSOR_NORMAL
                     )

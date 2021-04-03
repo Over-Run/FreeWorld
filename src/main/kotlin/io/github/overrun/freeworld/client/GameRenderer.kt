@@ -28,7 +28,7 @@ import io.github.overrun.freeworld.block.Block
 import io.github.overrun.freeworld.block.Blocks
 import io.github.overrun.freeworld.client.GlStateManager.disableCullFace
 import io.github.overrun.freeworld.client.GlStateManager.enableCullFace
-import io.github.overrun.freeworld.client.gui.CrossHair
+import io.github.overrun.freeworld.client.game.BaseGameObject2D
 import io.github.overrun.freeworld.entity.player.Player
 import io.github.overrun.freeworld.util.HitResult
 import io.github.overrun.freeworld.util.Utils.intArrayOfSize
@@ -45,45 +45,63 @@ import java.io.Closeable
  * @since 2021/03/18
  */
 class GameRenderer : Closeable {
-    private val transformation = Transformation()
     private val selectBuffer = MemoryUtil.memAllocInt(2000)
     private val hitResult = HitResult()
     private lateinit var block: Block
     private lateinit var world: World
-    lateinit var program: GlProgram
-    private lateinit var nTexGuiProgram: GlProgram
-    private lateinit var crossHair: CrossHair
+    private lateinit var program: GlProgram
+    private lateinit var program2D: GlProgram
+    private lateinit var crossHair: BaseGameObject2D
+    private lateinit var blocksTab: BaseGameObject2D
     private lateinit var hitResultBox: Mesh
 
     fun init() {
-        program = GlProgram()
-        program.createSh("shader/core/block")
+        program = GlProgram.of("shader/core/block")
+        program2D = GlProgram.of("shader/core/gui")
         Blocks.init(program)
         block = Blocks.grassBlock
-        FreeWorldClient.world = World(32, 64, 32)
+        FreeWorldClient.world = World(64, 64, 64)
         world = FreeWorldClient.world!!
-        nTexGuiProgram = GlProgram()
-        nTexGuiProgram.createSh("shader/2d/n_tex")
-        crossHair = CrossHair(
+        crossHair = BaseGameObject2D(
             Mesh.of(
                 "cross_hair",
-                nTexGuiProgram,
+                program2D,
                 floatArrayOf(
-                    -9f, 1f,
-                    -9f, -1f,
-                    9f, -1f,
-                    9f, 1f,
-                    -1f, -9f,
-                    -1f, 9f,
-                    1f, 9f,
-                    1f, -9f,
+                    -9f, 1f, 0f,
+                    -9f, -1f, 0f,
+                    9f, -1f, 0f,
+                    9f, 1f, 0f,
+                    -1f, -9f, 0f,
+                    -1f, 9f, 0f,
+                    1f, 9f, 0f,
+                    1f, -9f, 0f
                 ),
                 makeColor1f(8),
                 null,
                 intArrayOf(
                     0, 1, 2, 3, 4, 5, 6, 7
                 ),
-                dim = 2,
+                mode = GL_QUADS
+            )
+        )
+        blocksTab = BaseGameObject2D(
+            Mesh.of(
+                "blocksTab",
+                program2D,
+                floatArrayOf(
+                    -250f, -150f, 0f,
+                    -250f, 150f, 0f,
+                    250f, 150f, 0f,
+                    250f, -150f, 0f
+                ),
+                floatArrayOf(
+                    0f, 0f, 0f, 0.5f,
+                    0f, 0f, 0f, 0.5f,
+                    0f, 0f, 0f, 0.5f,
+                    0f, 0f, 0f, 0.5f
+                ),
+                null,
+                intArrayOf(0, 1, 2, 3),
                 mode = GL_QUADS
             )
         )
@@ -142,7 +160,7 @@ class GameRenderer : Closeable {
             block = Blocks.grassBlock
         if (window.isKeyPressed(GLFW_KEY_2))
             block = Blocks.dirt
-        if (Player.notPausing && !hitResult.isNull) {
+        if (Player.playing && !hitResult.isNull) {
             if (window.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 world.setBlock(hitResult.x, hitResult.y, hitResult.z, Blocks.air, true)
             if (window.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
@@ -169,7 +187,7 @@ class GameRenderer : Closeable {
     private fun pick(viewMatrix: Matrix4f) {
         glSelectBuffer(selectBuffer.clear())
         glRenderMode(GL_SELECT)
-        world.pick(program, transformation, viewMatrix)
+        world.pick(program, viewMatrix)
         val hits = glRenderMode(GL_RENDER)
         selectBuffer.flip().limit(selectBuffer.capacity())
         var closest = 0L
@@ -205,23 +223,27 @@ class GameRenderer : Closeable {
         if (window.resized) {
             crossHair.x = window.width / 2
             crossHair.y = window.height / 2
+            blocksTab.x = window.width / 2
+            blocksTab.y = window.height / 2
             glViewport(0, 0, window.width, window.height)
             window.resized = false
         }
         with(program) {
             bind()
-            val viewMatrix = transformation.getViewMatrix()
-            setUniform(
-                "projectionMatrix",
-                transformation.getPickMatrix(window)
-            )
+            val viewMatrix = Transformation.getViewMatrix()
             setUniform("texSampler", 0)
-            pick(viewMatrix)
+            if (!FreeWorldClient.showTab) {
+                setUniform(
+                    "projectionMatrix",
+                    Transformation.getPickMatrix(window)
+                )
+                pick(viewMatrix)
+            }
             setUniform(
                 "projectionMatrix",
-                transformation.getProjectionMatrix(window)
+                Transformation.getProjectionMatrix(window)
             )
-            world.render(program, transformation, viewMatrix)
+            world.render(this, viewMatrix)
             disableCullFace()
             renderHint(viewMatrix)
         }
@@ -235,7 +257,7 @@ class GameRenderer : Closeable {
     private fun renderHint(viewMatrix: Matrix4f) {
         program.setUniform(
             "modelViewMatrix",
-            transformation.getModelViewMatrix(hitResult, viewMatrix)
+            Transformation.getModelViewMatrix(hitResult, viewMatrix)
         )
         if (!hitResult.isNull
             && !world.getBlock(
@@ -291,16 +313,29 @@ class GameRenderer : Closeable {
     }
 
     private fun renderGui(window: Window) {
-        with(nTexGuiProgram) {
+        with(program2D) {
             bind()
-            setUniform(
-                "projModelViewMat",
-                transformation.getOrthoProjModelMatrix(
-                    crossHair,
-                    transformation.getOrthoProjMatrix(window)
+            val proj = Transformation.getOrthoProjMatrix(window)
+            setUniform("texSampler", 0)
+            if (FreeWorldClient.showTab) {
+                setUniform(
+                    "projModelViewMat",
+                    Transformation.getOrthoProjModelMatrix(
+                        blocksTab,
+                        proj
+                    )
                 )
-            )
-            crossHair.render()
+                blocksTab.render()
+            } else {
+                setUniform(
+                    "projModelViewMat",
+                    Transformation.getOrthoProjModelMatrix(
+                        crossHair,
+                        proj
+                    )
+                )
+                crossHair.render()
+            }
         }
     }
 
@@ -311,9 +346,9 @@ class GameRenderer : Closeable {
             program.close()
             program.disableVertexAttribArrays("vert", "in_color", "in_texCoord")
         }
-        if (this::nTexGuiProgram.isInitialized) {
-            nTexGuiProgram.close()
-            nTexGuiProgram.disableVertexAttribArrays("vert", "in_color")
+        if (this::program2D.isInitialized) {
+            program2D.close()
+            program2D.disableVertexAttribArrays("vert", "in_color", "in_texCoord")
         }
         GlProgram.unbind()
     }

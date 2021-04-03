@@ -38,7 +38,7 @@ object Player {
     var z = 2f
     var rotX = 0f
     var rotY = 0f
-    var notPausing = false
+    var playing = false
 
     fun moveRelative(ox: Float, oy: Float, oz: Float) {
         if (ox != 0f) {

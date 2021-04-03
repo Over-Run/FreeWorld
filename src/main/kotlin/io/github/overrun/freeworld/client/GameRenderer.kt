@@ -87,6 +87,54 @@ class GameRenderer : Closeable {
                 mode = GL_QUADS
             )
         )
+        hitResultBox = Mesh.of(
+            "hitResultBox",
+            program,
+            floatArrayOf(
+                -0.001f, -0.001f, -0.001f,
+                -0.001f, 1.001f, -0.001f,
+                1.001f, 1.001f, -0.001f,
+                1.001f, -0.001f, -0.001f,
+                -0.001f, -0.001f, 1.001f,
+                -0.001f, 1.001f, 1.001f,
+                1.001f, 1.001f, 1.001f,
+                1.001f, -0.001f, 1.001f
+                /*0f, 0f, 1f,
+                  0f, 1f, 1f,
+                  1f, 1f, 1f,
+                  1f, 0f, 1f,
+                  0f, 0f, 0f,
+                  0f, 1f, 0f,
+                  1f, 0f, 0f,
+                  1f, 0f, 0f*/
+            ),
+            floatArrayOf(
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f,
+                0f, 0f, 0f, 1f
+            ),
+            null,
+            intArrayOf(
+                // front
+                3, 2, 1, 0,
+                // right
+                7, 6, 2, 3,
+                // top
+                1, 2, 6, 5,
+                // left
+                0, 1, 5, 4,
+                // back
+                4, 5, 6, 7,
+                // bottom
+                0, 4, 7, 3
+            ),
+            mode = GL_QUADS
+        )
     }
 
     fun input(window: Window) {
@@ -148,6 +196,7 @@ class GameRenderer : Closeable {
             hitResult.y = names[2]
             hitResult.z = names[3]
             hitResult.face = names[4]
+            hitResult.block = world.getBlock(hitResult.x, hitResult.y, hitResult.z)
         } else hitResult.isNull = true
     }
 
@@ -188,58 +237,55 @@ class GameRenderer : Closeable {
             "modelViewMatrix",
             transformation.getModelViewMatrix(hitResult, viewMatrix)
         )
-        if (!hitResult.isNull) {
-            if (!this::hitResultBox.isInitialized)
-                hitResultBox = Mesh.of(
-                    "hitResultBox",
-                    program,
-                    floatArrayOf(
-                        -0.001f, -0.001f, -0.001f,
-                        -0.001f, 1.001f, -0.001f,
-                        1.001f, 1.001f, -0.001f,
-                        1.001f, -0.001f, -0.001f,
-                        -0.001f, -0.001f, 1.001f,
-                        -0.001f, 1.001f, 1.001f,
-                        1.001f, 1.001f, 1.001f,
-                        1.001f, -0.001f, 1.001f
-                        /*0f, 0f, 1f,
-                        0f, 1f, 1f,
-                        1f, 1f, 1f,
-                        1f, 0f, 1f,
-                        0f, 0f, 0f,
-                        0f, 1f, 0f,
-                        1f, 0f, 0f,
-                        1f, 0f, 0f*/
-                    ),
-                    floatArrayOf(
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f,
-                        0f, 0f, 0f, 1f
-                    ),
-                    null,
-                    intArrayOf(
-                        // front
-                        3, 2, 1, 0,
-                        // right
-                        7, 6, 2, 3,
-                        // top
-                        1, 2, 6, 5,
-                        // left
-                        0, 1, 5, 4,
-                        // back
-                        4, 5, 6, 7,
-                        // bottom
-                        0, 4, 7, 3
-                    ),
-                    mode = GL_QUADS
-                )
+        if (!hitResult.isNull
+            && !world.getBlock(
+                hitResult.x,
+                hitResult.y,
+                hitResult.z
+            ).getOutlineShape().isNull) {
+//            -0.001f, -0.001f, -0.001f,
+//            -0.001f, 1.001f, -0.001f,
+//            1.001f, 1.001f, -0.001f,
+//            1.001f, -0.001f, -0.001f,
+//            -0.001f, -0.001f, 1.001f,
+//            -0.001f, 1.001f, 1.001f,
+//            1.001f, 1.001f, 1.001f,
+//            1.001f, -0.001f, 1.001f
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            hitResultBox.render()
+            for (set in hitResult.block.getOutlineShape().sets) {
+                hitResultBox.vertices[0] = set.originX - 0.001f
+                hitResultBox.vertices[1] = set.originY - 0.001f
+                hitResultBox.vertices[2] = set.originZ - 0.001f
+
+                hitResultBox.vertices[3] = set.originX - 0.001f
+                hitResultBox.vertices[4] = set.endY + 0.001f
+                hitResultBox.vertices[5] = set.originZ - 0.001f
+
+                hitResultBox.vertices[6] = set.endX + 0.001f
+                hitResultBox.vertices[7] = set.endY + 0.001f
+                hitResultBox.vertices[8] = set.originZ - 0.001f
+
+                hitResultBox.vertices[9] = set.endX + 0.001f
+                hitResultBox.vertices[10] = set.originY - 0.001f
+                hitResultBox.vertices[11] = set.originZ - 0.001f
+
+                hitResultBox.vertices[12] = set.originX - 0.001f
+                hitResultBox.vertices[13] = set.originY - 0.001f
+                hitResultBox.vertices[14] = set.endZ + 0.001f
+
+                hitResultBox.vertices[15] = set.originX - 0.001f
+                hitResultBox.vertices[16] = set.endY + 0.001f
+                hitResultBox.vertices[17] = set.endZ + 0.001f
+
+                hitResultBox.vertices[18] = set.endX + 0.001f
+                hitResultBox.vertices[19] = set.endY + 0.001f
+                hitResultBox.vertices[20] = set.endZ + 0.001f
+
+                hitResultBox.vertices[21] = set.endX + 0.001f
+                hitResultBox.vertices[22] = set.originY - 0.001f
+                hitResultBox.vertices[23] = set.endZ + 0.001f
+                hitResultBox.render()
+            }
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         }
     }

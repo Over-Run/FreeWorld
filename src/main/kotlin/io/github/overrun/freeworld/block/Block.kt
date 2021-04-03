@@ -27,6 +27,8 @@ package io.github.overrun.freeworld.block
 import io.github.overrun.freeworld.block.Blocks.*
 import io.github.overrun.freeworld.client.Mesh
 import io.github.overrun.freeworld.client.game.GameObject
+import io.github.overrun.freeworld.util.shape.VoxelShape
+import io.github.overrun.freeworld.util.shape.VoxelShapes
 
 /**
  * @author squid233
@@ -47,10 +49,13 @@ open class Block(val union: BlockMeshUnion?) : GameObject {
     fun faceIs(face: Int, expected: Int) = (face and expected) == expected
 
     fun renderFace(face: Int, expected: Int) {
-        if (faceIs(face, expected)) {
-            union?.map?.get(expected)?.render()
-        }
+        if (faceIs(face, expected))
+            union?.render(expected)
     }
+
+    open fun getOutlineShape() = getCollisionShape()
+
+    open fun getCollisionShape(): VoxelShape = VoxelShapes.FULL_CUBE
 
     open fun render(face: Int) {
         if (face <= 0) return

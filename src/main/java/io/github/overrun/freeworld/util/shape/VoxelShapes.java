@@ -22,16 +22,23 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.block
-
-import io.github.overrun.freeworld.util.shape.VoxelShape
-import io.github.overrun.freeworld.util.shape.VoxelShapes
+package io.github.overrun.freeworld.util.shape;
 
 /**
  * @author squid233
- * @since 2021/03/25
+ * @since 2021/03/30
  */
-class AirBlock(union: BlockMeshUnion?) : Block(union) {
-    override fun render(face: Int) = Unit
-    override fun getCollisionShape(): VoxelShape = VoxelShapes.EMPTY
+public final class VoxelShapes {
+    public static final VoxelShape FULL_CUBE = new VoxelShape(
+            new VoxelSet(0, 0, 0, 1, 1, 1)
+    );
+    public static final VoxelShape EMPTY = empty();
+
+    private static VoxelShape empty() {
+        VoxelShape shape = new VoxelShape(
+                new VoxelSet(0, 0, 0, 0, 0, 0)
+        );
+        shape.setNull(true);
+        return shape;
+    }
 }

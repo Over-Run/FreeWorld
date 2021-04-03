@@ -58,7 +58,6 @@ class World(
     }
 
     fun render(program: GlProgram, transformation: Transformation, viewMatrix: Matrix4f) {
-        var i = 0
         for (x in 0 until width) {
             for (z in 0 until depth) {
                 for (y in 0 until height) {
@@ -94,7 +93,6 @@ class World(
                             result += FACE_FRONT + FACE_OVERLAY_FRONT
                         block.render(result)
                     }
-                    ++i
                 }
             }
         }
@@ -104,14 +102,13 @@ class World(
         glInitNames()
         glPushName(0)
         glPushName(0)
-        val boxRadius = 6
+        val boxRadius = 10
         val pX0 = (Player.x - boxRadius).toInt()
         val pY0 = (Player.y - boxRadius).toInt()
         val pZ0 = (Player.z - boxRadius).toInt()
         val pX1 = (Player.x + boxRadius + 1).toInt()
         val pY1 = (Player.y + boxRadius + 1).toInt()
         val pZ1 = (Player.z + boxRadius + 1).toInt()
-        var i = 0
         for (x in pX0 until pX1) {
             glLoadName(x)
             glPushName(0)
@@ -138,21 +135,93 @@ class World(
                             "modelViewMatrix",
                             transformation.getModelViewMatrix(block, viewMatrix)
                         )
+                        glColor3f(1f, 1f, 1f)
                         glLoadName(FACE_FRONT)
-                        block.render(FACE_FRONT)
+                        if (getBlock(x, y, z + 1) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V0
+                                glVertex3f(set.originX, set.endY, set.endZ)
+                                // V1
+                                glVertex3f(set.originX, set.originY, set.endZ)
+                                // V2
+                                glVertex3f(set.endX, set.originY, set.endZ)
+                                // V3
+                                glVertex3f(set.endX, set.endY, set.endZ)
+                                glEnd()
+                            }
                         glLoadName(FACE_RIGHT)
-                        block.render(FACE_RIGHT)
+                        if (getBlock(x + 1, y, z) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V3
+                                glVertex3f(set.endX, set.endY, set.endZ)
+                                // V2
+                                glVertex3f(set.endX, set.originY, set.endZ)
+                                // V6
+                                glVertex3f(set.endX, set.originY, set.originZ)
+                                // V7
+                                glVertex3f(set.endX, set.endY, set.originZ)
+                                glEnd()
+                            }
                         glLoadName(FACE_TOP)
-                        block.render(FACE_TOP)
+                        if (getBlock(x, y + 1, z) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V4
+                                glVertex3f(set.originX, set.endY, set.originZ)
+                                // V0
+                                glVertex3f(set.originX, set.endY, set.endZ)
+                                // V3
+                                glVertex3f(set.endX, set.endY, set.endZ)
+                                // V7
+                                glVertex3f(set.endX, set.endY, set.originZ)
+                                glEnd()
+                            }
                         glLoadName(FACE_LEFT)
-                        block.render(FACE_LEFT)
+                        if (getBlock(x - 1, y, z) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V4
+                                glVertex3f(set.originX, set.endY, set.originZ)
+                                // V5
+                                glVertex3f(set.originX, set.originY, set.originZ)
+                                // V1
+                                glVertex3f(set.originX, set.originY, set.endZ)
+                                // V0
+                                glVertex3f(set.originX, set.endY, set.endZ)
+                                glEnd()
+                            }
                         glLoadName(FACE_BACK)
-                        block.render(FACE_BACK)
+                        if (getBlock(x, y, z - 1) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V7
+                                glVertex3f(set.endX, set.endY, set.originZ)
+                                // V6
+                                glVertex3f(set.endX, set.originY, set.originZ)
+                                // V5
+                                glVertex3f(set.originX, set.originY, set.originZ)
+                                // V4
+                                glVertex3f(set.originX, set.endY, set.originZ)
+                                glEnd()
+                            }
                         glLoadName(FACE_BOTTOM)
-                        block.render(FACE_BOTTOM)
+                        if (getBlock(x, y - 1, z) == air)
+                            for (set in block.getCollisionShape().sets) {
+                                glBegin(GL_QUADS)
+                                // V1
+                                glVertex3f(set.originX, set.originY, set.endZ)
+                                // V5
+                                glVertex3f(set.originX, set.originY, set.originZ)
+                                // V6
+                                glVertex3f(set.endX, set.originY, set.originZ)
+                                // V2
+                                glVertex3f(set.endX, set.originY, set.endZ)
+                                glEnd()
+                            }
                     }
                     glPopName()
-                    ++i
                 }
                 glPopName()
             }

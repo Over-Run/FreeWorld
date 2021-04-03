@@ -35,15 +35,6 @@ import io.github.overrun.freeworld.client.Texture
 class BlockMeshUnion(private val blockName: String) {
     val map = HashMap<Int, Mesh>()
 
-    private fun setMap(face: Int, texture: Texture, array: FloatArray) {
-        map[face] = singleFaceMesh(
-            face,
-            blockName,
-            texture,
-            *array
-        )
-    }
-
     init {
         val texture = Texture("assets.freeworld/textures/block/$blockName.png")
         setMap(FACE_FRONT, texture, VERTICES_FRONT)
@@ -56,5 +47,17 @@ class BlockMeshUnion(private val blockName: String) {
         setMap(FACE_OVERLAY_RIGHT, texture, VERTICES_OVERLAY_RIGHT)
         setMap(FACE_OVERLAY_LEFT, texture, VERTICES_OVERLAY_LEFT)
         setMap(FACE_OVERLAY_BACK, texture, VERTICES_OVERLAY_BACK)
+    }
+
+    fun render(face: Int) =
+        map[face]?.render()
+
+    private fun setMap(face: Int, texture: Texture, array: FloatArray) {
+        map[face] = singleFaceMesh(
+            face,
+            blockName,
+            texture,
+            *array
+        )
     }
 }

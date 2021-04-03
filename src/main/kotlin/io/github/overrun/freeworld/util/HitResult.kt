@@ -24,6 +24,7 @@
 
 package io.github.overrun.freeworld.util
 
+import io.github.overrun.freeworld.block.Blocks
 import io.github.overrun.freeworld.client.Mesh
 import io.github.overrun.freeworld.client.game.GameObject
 
@@ -37,6 +38,7 @@ class HitResult : GameObject {
     var y = 0
     var z = 0
     var face = 0
+    var block = Blocks.air
 
     override val mesh: Mesh? = null
 

@@ -22,16 +22,14 @@
  * SOFTWARE.
  */
 
-package io.github.overrun.freeworld.block
-
-import io.github.overrun.freeworld.util.shape.VoxelShape
-import io.github.overrun.freeworld.util.shape.VoxelShapes
+package io.github.overrun.freeworld.util.shape
 
 /**
  * @author squid233
- * @since 2021/03/25
+ * @since 2021/03/30
  */
-class AirBlock(union: BlockMeshUnion?) : Block(union) {
-    override fun render(face: Int) = Unit
-    override fun getCollisionShape(): VoxelShape = VoxelShapes.EMPTY
-}
+class VoxelSet
+/**
+ * The params are floating point in range [0..1]
+ */
+(val originX: Float, val originY: Float, val originZ: Float, val endX: Float, val endY: Float, val endZ: Float)

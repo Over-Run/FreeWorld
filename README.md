@@ -1,4 +1,10 @@
-# FreeWorld
+# FreeWorld ![GitHub](https://img.shields.io/github/license/Over-Run/FreeWorld)
+
+![GitHub issues](https://img.shields.io/github/issues-raw/Over-Run/FreeWorld)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Over-Run/FreeWorld)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Over-Run/FreeWorld)
+![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/Over-Run/FreeWorld?include_prereleases)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/Over-Run/FreeWorld)
 
 This is a sandbox game.
 

@@ -10,16 +10,13 @@
 
 This is a sandbox game.
 
-~~**WARNING: LOW PERFORMANCE**~~
-
 ## General Operations
 
-The game will generate a world with size 64\*64\*64.  
-Fill with 2 layers of dirt and 1 layer of grass block.
+The game will generate a world with size 64&times;64&times;64.  
+//Fill with 2 layers of dirt and 1 layer of grass block.
 
 - Keys
-    - Escape: Exit game
-    - Grave Accent (~): Switch cursor mode
+    - Escape: Save and Pause
     - W/A/S/D/Space/Left Shift: Move
     - 1: Choose grass block
     - 2: Choose dirt
@@ -31,17 +28,17 @@ Fill with 2 layers of dirt and 1 layer of grass block.
 
 - freeworld.vsync=true
 - freeworld.fps=60
-- freeworld.ups=30
+- freeworld.tps=20
 
-## Command system
+<!--## Command system
 
 We added command in version 0.1.0-WIP.  
 Just type the command in terminal.
 
-- <a: type> : argument  
+- <a: type> : argument
 - \[\<a: type>] : optional argument
 
-Available commands:  
+Available commands:
 - setblock <x: int> <y: int> <z: int> \[<block: string>]
 - tp <x: float> <y: float> <z: float>
 
@@ -52,17 +49,15 @@ The texture structure:
 - 0, 0 ~ 15, 15: Top
 - 16, 0 ~ 31, 15: Side
 - 0, 16 ~ 15, 31: Bottom
-- 16, 16, 31, 31: Side overlay
+- 16, 16, 31, 31: Side overlay-->
 
 ## Credits
 
 - [LWJGL](https://www.lwjgl.org/) Core of game
     - [GLFW](https://www.glfw.org/)
-    - [OpenGL](https://www.opengl.org/) Requires OpenGL 2.0: Don't upgrade to Windows 10 if you're using legacy Intel® Integrated Graphics
-    - Assimp: Unused currently
-- JOML
-- [Mojang Studios](https://mojang.com)
-    - For textures
-- Log4j
+    - [OpenGL](https://www.opengl.org/) Requires OpenGL 1.2: Don't upgrade to Windows 10 if you're using legacy Intel® Integrated Graphics
+- [JOML](https://joml-ci.github.io/JOML/)
+- [Mojang Studios](https://mojang.com/)
+- [Log4j](http://logging.apache.org/log4j/2.x/index.html)
 - [Minecrell](https://github.com/Minecrell/)
-    - The Kotlin version for `io.github.overrun.freeworld.util.LoggerNamePatternSelector`
+    - [LoggerNamePatternSelector](https://github.com/Minecrell/TerminalConsoleAppender/blob/master/src/main/java/net/minecrell/terminalconsole/util/LoggerNamePatternSelector.java)

@@ -1,11 +1,11 @@
-<Configuration status="WARN" packages="org.overrun.freeworld.client.util">
+<Configuration status="WARN" packages="io.github.overrun.freeworld.util">
     <Appenders>
         <!-- 	System out	 -->
         <Console name="SysOut" target="SYSTEM_OUT">
             <PatternLayout>
                 <LoggerNamePatternSelector defaultPattern="%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(%logger{1})}{cyan} %highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}" disableAnsi="${sys:freeworld.log.disableAnsi:-true}">
                     <!--  Don't show the logger name for freeworld classes -->
-                    <PatternMatch key="org.overrun.freeworld." pattern="%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(Minecraft2D)}{cyan} %highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}"/>
+                    <PatternMatch key="io.github.overrun.freeworld." pattern="%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(Minecraft2D)}{cyan} %highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}"/>
                 </LoggerNamePatternSelector>
             </PatternLayout>
         </Console>
@@ -14,7 +14,7 @@
             <PatternLayout>
                 <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n">
                     <!--  Don't show the logger name for freeworld classes -->
-                    <PatternMatch key="org.overrun.freeworld." pattern="[%d{HH:mm:ss}] [%t/%level] (Minecraft2D) %msg%n"/>
+                    <PatternMatch key="io.github.overrun.freeworld." pattern="[%d{HH:mm:ss}] [%t/%level] (Minecraft2D) %msg%n"/>
                 </LoggerNamePatternSelector>
             </PatternLayout>
             <Policies>
@@ -34,7 +34,7 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <Logger level="${sys:freeworld.log.level:-info}" name="org.overrun.freeworld"/>
+        <Logger level="${sys:freeworld.log.level:-info}" name="io.github.overrun.freeworld"/>
         <Root level="all">
             <AppenderRef ref="DebugFile" level="${sys:freeworld.log.debug.level:-debug}"/>
             <AppenderRef ref="SysOut" level="${sys:freeworld.log.level:-info}"/>
